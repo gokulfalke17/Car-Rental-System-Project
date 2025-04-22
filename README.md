@@ -1,4 +1,6 @@
-    # Car Rental Management System #
+# Car Rental Management System #
+----------------------------------
+
 This is a complete Car Rental Management System. It helps Admins and Customers manage cars, bookings, payments, feedback, and more. The backend is built
 using **Spring Boot**, and the frontend is developed with **React and Bootstrap**.
 
