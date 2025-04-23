@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showNotificationDot, setShowNotificationDot] = useState(false);
 
@@ -21,76 +21,133 @@ const Navbar = () => {
     };
 
     checkNotification();
-
     const interval = setInterval(checkNotification, 1000);
-
     return () => clearInterval(interval);
-  }, []); 
-  
+  }, []);
+
   const handleLogoutConfirm = () => {
     localStorage.removeItem("user");
-    setUser(null); 
+    setUser(null);
     setShowModal(false);
     navigate("/login");
   };
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-3 sticky-top">
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top px-3">
         <div className="container-fluid">
           <Link className="navbar-brand d-flex align-items-center" to="/">
             <img src={carLogo} alt="logo" width="40" className="me-2" />
             <strong>Car Rental System</strong>
           </Link>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <div className="d-flex gap-2 mt-2 mt-lg-0">
+          <div className="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul className="navbar-nav ms-auto d-flex flex-lg-row flex-column gap-2 mt-3 mt-lg-0 align-items-stretch align-items-lg-center w-100">
               {user && user.role?.toLowerCase() === "customer" && (
                 <>
-                  <Link to="/explore" className="btn btn-outline-warning">Explore Vehicles</Link>
-                  <Link to="/my-bookings" className="btn btn-outline-warning">My Bookings</Link>
-                  <Link to="/profile" className="btn btn-outline-warning">My Profile</Link>
-                  <Link to="/my-report" className="btn btn-outline-info">Report</Link>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/explore" className="btn btn-outline-warning">Explore Vehicles</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/my-bookings" className="btn btn-outline-warning">My Bookings</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/profile" className="btn btn-outline-warning">My Profile</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/my-report" className="btn btn-outline-info">Report</Link>
+                    </div>
+                  </li>
                 </>
               )}
 
               {user && user.role?.toLowerCase() === "admin" && (
                 <>
-                  <Link to="/company" className="btn btn-outline-warning">Add Company</Link>
-                  <Link to="/variant" className="btn btn-outline-warning">Add Variant</Link>
-                  <Link to="/variantList" className="btn btn-outline-warning">Variants</Link>
-
-                  <div style={{ position: 'relative' }}>
-                    <Link to="/admin/bookings" className="btn btn-outline-warning position-relative">
-                      Bookings
-                      {showNotificationDot && (
-                        <span
-                          className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-                          style={{ width: '10px', height: '10px' }}
-                        ></span>
-                      )}
-                    </Link>
-                  </div>
-
-                  <Link to="/admin/customers" className="btn btn-outline-warning">Customers</Link>
-
-                  <Link to="/all-reports" className="btn btn-outline-info">Reports</Link>
-
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/dashbord" className="btn btn-outline-warning">Dashboard</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/company" className="btn btn-outline-warning">Add Company</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/variant" className="btn btn-outline-warning">Add Variant</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/variantList" className="btn btn-outline-warning">Variants</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto position-relative">
+                    <div className="d-grid">
+                      <Link to="/admin/bookings" className="btn btn-outline-warning position-relative">
+                        Bookings
+                        {showNotificationDot && (
+                          <span
+                            className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                            style={{ width: '10px', height: '10px' }}
+                          ></span>
+                        )}
+                      </Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/admin/customers" className="btn btn-outline-warning">Customers</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/all-reports" className="btn btn-outline-info">Reports</Link>
+                    </div>
+                  </li>
                 </>
               )}
 
               {user ? (
-                <button className="btn btn-outline-danger" onClick={() => setShowModal(true)}>Logout</button>
+                <li className="nav-item w-100 w-lg-auto">
+                  <div className="d-grid">
+                    <button className="btn btn-outline-danger" onClick={() => setShowModal(true)}>Logout</button>
+                  </div>
+                </li>
               ) : (
                 <>
-                  <Link to="/register" className="btn btn-warning">Register</Link>
-                  <Link to="/login" className="btn btn-outline-light">Login</Link>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/register" className="btn btn-warning">Register</Link>
+                    </div>
+                  </li>
+                  <li className="nav-item w-100 w-lg-auto">
+                    <div className="d-grid">
+                      <Link to="/login" className="btn btn-outline-light">Login</Link>
+                    </div>
+                  </li>
                 </>
               )}
-            </div>
+            </ul>
           </div>
         </div>
       </nav>

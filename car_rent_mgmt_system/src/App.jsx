@@ -27,6 +27,7 @@ import Feedback from "./components/Feedback";
 import ResetPassword from "./components/ResetPassword";
 import FeedbackReport from "./components/FeedbackReport";
 import Reports from "./components/Reports";
+import Dashboard from "./components/Dashboard";
 
 
 const App = () => {
@@ -61,6 +62,7 @@ const App = () => {
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/feedback-report" element={<FeedbackReport />} />
         <Route path="/all-reports" element={<Reports />} />
+        <Route path="/dashbord" element={<Dashboard />} />
       </Routes>
     </Router>
   );
