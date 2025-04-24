@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+
 
 const Variant = () => {
+    const navigate = useNavigate(); 
   const [variant, setVariant] = useState({
     variantName: "",
     variantDesc: "",
@@ -137,7 +140,11 @@ const Variant = () => {
         rentPerDay: "",
         company: { id: "" }
       });
+      
       setImage(null);
+      setTimeout(() => {
+        navigate("/variantList"); 
+      }, 1500);
     } catch (err) {
       console.error("Error adding variant:", err.response?.data || err.message);
       setMessage(`❌ Failed to add variant: ${err.response?.data?.message || "Server error"}`);

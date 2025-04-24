@@ -68,11 +68,14 @@ const Navbar = () => {
   }, []);
 
   const handleLogoutConfirm = () => {
+    console.log("data in local storage " + 
+     JSON.stringify(localStorage))
+
     localStorage.clear();
     setUser(null);
     setShowModal(false);
-    navigate('/login');
-    window.location.reload();
+     navigate('/login');
+    // window.location.reload();
   };
 
   const toggleNavbar = () => setIsCollapsed(!isCollapsed);

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import api from "../API/api";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const UpdateVariant = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); 
+
 
   const [formData, setFormData] = useState({
     id: "",
@@ -63,6 +65,9 @@ const UpdateVariant = () => {
         }
       });
       setMessage("✅ Variant updated successfully!");
+      setTimeout(() => {
+        navigate("/variantList"); 
+      }, 1500);
     } catch (err) {
       console.error("Update Error:", err.response?.data || err.message);
       setMessage("❌ Failed to update variant.");

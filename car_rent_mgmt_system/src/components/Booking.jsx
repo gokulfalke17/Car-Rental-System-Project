@@ -220,6 +220,7 @@ const Booking = () => {
 
   useEffect(() => {
     const userIdFromStorage = localStorage.getItem("userId"); 
+
     const imageFromStorage = localStorage.getItem("imageKey");
 
     setUserId(userIdFromStorage); 

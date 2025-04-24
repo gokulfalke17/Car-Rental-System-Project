@@ -235,7 +235,12 @@ const Bookings = () => {
                           >
                             Approve
                           </button>
-                          
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleStatusUpdate(booking.bookingId, 'CANCELED')}
+                          >
+                            Cancel
+                          </button>
                         </>
                       )}
 
