@@ -595,13 +595,7 @@ const CustomerReport = () => {
               </div>
               <h4 style={{ color: colors.dark }}>No Bookings Found</h4>
               <p className="text-muted mb-4">You don't have any booking records yet.</p>
-              <Button
-                variant="primary"
-                style={{ backgroundColor: colors.accent, border: 'none' }}
-                onClick={() => window.location.href = '/vehicles'}
-              >
-                Browse Vehicles
-              </Button>
+              
             </Card.Body>
           </Card>
         )}

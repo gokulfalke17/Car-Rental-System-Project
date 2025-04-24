@@ -137,7 +137,7 @@ const Navbar = () => {
                 <>
                   <li className="nav-item w-100 w-lg-auto">
                     <div className="d-grid">
-                      <Link to="/register" className="btn btn-warning">Register</Link>
+                      <Link to="/register" className="btn btn-outline-warning">Register</Link>
                     </div>
                   </li>
                   <li className="nav-item w-100 w-lg-auto">

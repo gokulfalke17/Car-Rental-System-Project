@@ -20,36 +20,56 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mgmt.entity.Variant;
 import com.mgmt.entity.Vehicle;
 import com.mgmt.service.IVariantService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173") // frantend react port number
+@CrossOrigin(origins = "http://localhost:5173") 
 @RequestMapping("/api/variant")
 public class VariantOperationsController {
 
 	@Autowired
 	private IVariantService variantService;
 
-	// add variant
+	/*// add variant
 	@PostMapping("/save")
 	public ResponseEntity<?> addVariant(@RequestPart("variant") String variantJson,
 			@RequestPart("imageUrl") MultipartFile file) throws IOException {
-
+	
 		ObjectMapper objectMapper = new ObjectMapper();
 		Variant variant = objectMapper.readValue(variantJson, Variant.class);
-
+	
 		String fileName = file.getOriginalFilename();
 		file.transferTo(new File(
 				"D:\\Workspaces\\Company_Tasks(Projects)\\Car_Rent_System\\Project01-CarBookingManagementSystem\\src\\main\\resources\\imgs\\"
 						+ fileName));
 		variant.setImageUrl(fileName);
-
+	
 		Variant savedVariant = variantService.addVariant(variant);
 		return ResponseEntity.ok(savedVariant);
+	}*/
+	
+	@PostMapping("/save")
+	public ResponseEntity<?> addVariant(
+	    @RequestPart("variant") String variantJson,
+	    @RequestPart("image") MultipartFile file) throws IOException {
+	    
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	    Variant variant = objectMapper.readValue(variantJson, Variant.class);
+
+	    String fileName = file.getOriginalFilename();
+	    file.transferTo(new File("YOUR_FILE_PATH_HERE" + fileName));
+	    variant.setImageUrl(fileName);
+
+	    Variant savedVariant = variantService.addVariant(variant);
+	    return ResponseEntity.ok(savedVariant);
 	}
+
 
 	// adding backend pagination
 	@GetMapping("/all")

@@ -11,7 +11,6 @@ const SummaryCards = ({ data }) => {
   ];
 
   const cards = [
-    { label: "Total Cars", value: data.totalCars },
     { label: "Booked Cars", value: data.bookedCars },
     { label: "Available Cars", value: data.availableCars },
     { label: "Customers", value: data.customerCount },

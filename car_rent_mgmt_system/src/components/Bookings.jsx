@@ -145,12 +145,15 @@ const Bookings = () => {
                   <td>{renderStatusBadge(booking.status)}</td>
                   <td>
                     <div className="d-flex flex-wrap gap-2">
-                      <button
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => handleView(booking)}
-                      >
-                        View
-                      </button>
+                      {booking.status !== 'ACCEPTED' && (
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => handleView(booking)}
+                          disabled
+                        >
+                          Done
+                        </button>
+                      )}
 
                       {booking.status === 'PENDING' && (
                         <>
@@ -182,6 +185,7 @@ const Bookings = () => {
                       )}
                     </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
