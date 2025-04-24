@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 
 const Company = () => {
   const [companyName, setCompanyName] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate(); 
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,6 +16,7 @@ const Company = () => {
       .post("http://localhost:4041/api/companies", { companyName })
       .then((res) => {
         setMessage("Company added successfully!");
+        navigate("/variant"); 
         setCompanyName("");
       })
       .catch((err) => {

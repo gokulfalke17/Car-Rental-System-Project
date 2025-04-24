@@ -74,8 +74,8 @@ const Dashboard = () => {
     orange: "#fb5607",
     pink: "#ff006e",
 
-    gradientPrimary: "linear-gradient(135deg, #4361ee, #3a0ca3)",
-    gradientSecondary: "linear-gradient(135deg, #4cc9f0, #4895ef)",
+    gradientPrimary: "linear-gradient(135deg,rgb(72, 250, 18),rgb(33, 140, 207))",
+    gradientSecondary: "linear-gradient(135deg,rgb(111, 193, 218), #4895ef)",
     gradientAccent: "linear-gradient(135deg, #f72585, #b5179e)",
     gradientSuccess: "linear-gradient(135deg, #38b000, #70e000)",
     gradientWarning: "linear-gradient(135deg, #ffaa00, #ffd000)"

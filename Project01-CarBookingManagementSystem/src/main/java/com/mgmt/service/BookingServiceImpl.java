@@ -35,9 +35,6 @@ public class BookingServiceImpl implements IBookingService {
 	public ILicenseRepository licenseRepository;
 	
 	
-	
-
-	
 
 	/*@Override
 	public Booking bookVehicle(Integer vehicleId, Integer userId, LocalDate fromDate, LocalDate toDate) {
@@ -189,7 +186,7 @@ public class BookingServiceImpl implements IBookingService {
 	    LocalDate today = LocalDate.now();
 
 	    List<Booking> bookings = bookingRepository.findAll();
-
+	    
 	    for (Booking booking : bookings) {
 	        if ("Booked".equalsIgnoreCase(booking.getVehicle().getStatus()) && booking.getToDate().isBefore(today)) {
 	            Vehicle vehicle = booking.getVehicle();

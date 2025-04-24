@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AddLicense = () => {
   const [licenseNumber, setLicenseNumber] = useState('');
@@ -7,12 +8,12 @@ const AddLicense = () => {
   const [licensePhoto, setLicensePhoto] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const userId = localStorage.getItem("userId");
-    console.log("Sending User ID:", userId); 
 
     if (!licenseNumber || !expiryDate || !licensePhoto) {
       setError('All fields are required!');
@@ -34,12 +35,20 @@ const AddLicense = () => {
 
       if (response.data) {
         setSuccess(true);
-        navigate(`/explore`);
         setError('');
+        
+        setTimeout(() => {
+          navigate("/explore"); 
+        }, 1500);
       }
     } catch (err) {
-      // setError('Error uploading license!');
       console.error(err);
+      if (err.response && err.response.status === 409) {
+        setError("License already exists for this user.");
+      } else {
+        setError("Something went wrong while adding the license.");
+      }
+      setSuccess(false);
     }
   };
 

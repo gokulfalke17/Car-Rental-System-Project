@@ -8,38 +8,102 @@ const Bookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 6;
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-
-    if (user?.role !== 'admin') {
-      navigate('/');
-    } else {
-      axios.get('http://localhost:4041/api/bookings/admin/bookings')
-        .then((response) => {
-          const allBookings = response.data;
-          setBookings(allBookings);
-          setFilteredBookings(allBookings);
-
-          const hasPending = allBookings.some(booking => booking.status === 'PENDING');
-          if (hasPending) {
-            localStorage.setItem('newBookingNotification', 'true');
-          } else {
-            localStorage.removeItem('newBookingNotification');
-          }
-
-          setLoading(false);
-        })
-        .catch(() => {
-          setError('Error fetching bookings.');
-          setLoading(false);
-        });
+  const checkAuthAndFetchData = () => {
+    let user = null;
+    
+    const sessionUser = sessionStorage.getItem('user');
+    if (sessionUser) {
+      try {
+        user = JSON.parse(sessionUser);
+      } catch (e) {
+        console.error('Error parsing user from sessionStorage:', e);
+      }
     }
+    
+    if (!user) {
+      const localUser = localStorage.getItem('user');
+      if (localUser) {
+        try {
+          user = JSON.parse(localUser);
+          sessionStorage.setItem('user', localUser);
+        } catch (e) {
+          console.error('Error parsing user from localStorage:', e);
+        }
+      }
+    }
+    
+    setCurrentUser(user);
+    
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+    
+    fetchBookings(user);
+  };
+
+  const fetchBookings = (user) => {
+    if (!user || user.role !== 'admin') {
+      return;
+    }
+    
+    setLoading(true);
+    
+    axios.get('http://localhost:4041/api/bookings/admin/bookings', {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token') || localStorage.getItem('token')}`
+      }
+    })
+      .then((response) => {
+        const allBookings = response.data;
+        setBookings(allBookings);
+        setFilteredBookings(allBookings);
+
+        const hasPending = allBookings.some(booking => booking.status === 'PENDING');
+        if (hasPending) {
+          sessionStorage.setItem('newBookingNotification', 'true');
+        } else {
+          sessionStorage.removeItem('newBookingNotification');
+        }
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching bookings:", err);
+        setError('Error fetching bookings. Please try again.');
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    checkAuthAndFetchData();
+    
+    const handleStorageChange = () => {
+      checkAuthAndFetchData();
+    };
+    
+    const handleUserLogout = () => {
+      setBookings([]);
+      setFilteredBookings([]);
+      navigate('/');
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-change', handleStorageChange);
+    window.addEventListener('user-logout', handleUserLogout);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-change', handleStorageChange);
+      window.removeEventListener('user-logout', handleUserLogout);
+    };
   }, [navigate]);
 
   useEffect(() => {
@@ -52,7 +116,14 @@ const Bookings = () => {
 
   const handleStatusUpdate = (bookingId, newStatus) => {
     axios
-      .put(`http://localhost:4041/api/bookings/update-status/${bookingId}`, { status: newStatus })
+      .put(`http://localhost:4041/api/bookings/update-status/${bookingId}`, 
+        { status: newStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token') || localStorage.getItem('token')}`
+          }
+        }
+      )
       .then((response) => {
         const updatedBooking = response.data;
         const updatedList = bookings.map((booking) =>
@@ -62,15 +133,15 @@ const Bookings = () => {
   
         const stillPending = updatedList.some((b) => b.status === 'PENDING');
         if (!stillPending) {
+          sessionStorage.removeItem('newBookingNotification');
           localStorage.removeItem('newBookingNotification');
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Error updating booking status:", err);
         alert('Failed to update booking status.');
       });
   };
-
-  
   
   const handleView = (booking) => {
     alert(`Viewing booking ID: ${booking.bookingId}`);
@@ -164,12 +235,7 @@ const Bookings = () => {
                           >
                             Approve
                           </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleStatusUpdate(booking.bookingId, 'CANCELED')}
-                          >
-                            Cancel
-                          </button>
+                          
                         </>
                       )}
 
@@ -186,7 +252,6 @@ const Bookings = () => {
                       )}
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>

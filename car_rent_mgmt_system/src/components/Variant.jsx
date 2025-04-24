@@ -15,7 +15,6 @@ const Variant = () => {
     company: {
       id: "",
     }
-    // Removed password field as it wasn't used in the form
   });
 
   const [image, setImage] = useState(null);
@@ -23,6 +22,7 @@ const Variant = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
 
   const colors = {
     primary: "#4361ee",
@@ -68,7 +68,6 @@ const Variant = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -86,12 +85,11 @@ const Variant = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate image file type and size
       if (!file.type.match("image.*")) {
         setErrors(prev => ({ ...prev, image: "Please upload an image file" }));
         return;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({ ...prev, image: "Image size should be less than 5MB" }));
         return;
       }
@@ -99,63 +97,6 @@ const Variant = () => {
       setErrors(prev => ({ ...prev, image: "" }));
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-    
-  //   if (!validateForm()) {
-  //     setMessage("❌ Please fill all required fields correctly.");
-  //     return;
-  //   }
-    
-  //   setIsSubmitting(true);
-  //   setMessage("");
-
-  //   const formData = new FormData();
-    
-  //   // Append all variant fields
-  //   Object.entries(variant).forEach(([key, value]) => {
-  //     if (key === "company") {
-  //       formData.append("company.id", value.id);
-  //     } else {
-  //       formData.append(key, value);
-  //     }
-  //   });
-    
-  //   // Append the image file
-  //   if (image) {
-  //     formData.append("image", image);
-  //   }
-
-  //   try {
-  //     const res = await axios.post("http://localhost:4041/api/variant/save", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     });
-
-  //     setMessage("✅ Variant added successfully!");
-  //     // Reset form
-  //     setVariant({
-  //       variantName: "",
-  //       variantDesc: "",
-  //       modelNumber: "",
-  //       year: "",
-  //       fuelType: "",
-  //       isAc: false,
-  //       seatCapacity: "",
-  //       rentPerDay: "",
-  //       company: { id: "" }
-  //     });
-  //     setImage(null);
-  //   } catch (err) {
-  //     console.error("Error adding variant:", err.response?.data || err.message);
-  //     setMessage(`❌ Failed to add variant: ${err.response?.data?.message || "Server error"}`);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -170,10 +111,9 @@ const Variant = () => {
   
     const formData = new FormData();
   
-    // Convert variant object to JSON string
     const variantPayload = JSON.stringify(variant);
   
-    formData.append("variant", variantPayload); // This must match @RequestPart("variant")
+    formData.append("variant", variantPayload); 
     if (image) {
       formData.append("image", image);
     }
