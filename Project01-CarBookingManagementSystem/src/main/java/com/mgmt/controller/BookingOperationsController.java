@@ -1,6 +1,8 @@
 package com.mgmt.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mgmt.entity.Booking;
 import com.mgmt.entity.Booking.BookingStatus;
-import com.mgmt.entity.User;
 import com.mgmt.service.IBookingService;
 
 @RestController
@@ -76,15 +77,15 @@ public class BookingOperationsController {
 		}
 	}
 
-	@PutMapping("/update-status/{bookingId}")
+	/*@PutMapping("/update-status/{bookingId}")
 	public ResponseEntity<?> updateBookingStatus(@PathVariable("bookingId") Integer bookingId,
 			@RequestBody Booking bookingRequest) {
 		try {
 			boolean updated = bookingService.updateBookingStatus(bookingId, bookingRequest.getStatus());
-
+	
 			if (updated) {
 				Booking updatedBooking = (Booking) bookingService.getBookingsByUserId(bookingId);
-
+	
 				return ResponseEntity.ok(updatedBooking);
 			} else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Booking not found.");
@@ -92,7 +93,27 @@ public class BookingOperationsController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
 		}
+	}*/
+	
+	
+	@PutMapping("/update-status/{bookingId}")
+	public ResponseEntity<?> updateBookingStatus(
+	        @PathVariable("bookingId") Integer bookingId,
+	        @RequestBody Booking bookingRequest) {
+	    try {
+	        boolean updated = bookingService.updateBookingStatus(bookingId, bookingRequest.getStatus());
+
+	        if (updated) {
+	            Optional<Booking> updatedBooking = bookingService.getBookingById(bookingId);
+	            return ResponseEntity.ok(updatedBooking);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Booking not found.");
+	        }
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+	    }
 	}
+
 	
 	
 	@GetMapping("/customer/{userId}")
@@ -100,6 +121,18 @@ public class BookingOperationsController {
 	    List<Booking> userReport = bookingService.getBookingUserReportByUserId(userId);
 	    return new ResponseEntity<>(userReport, HttpStatus.OK);
 	}
+	
+	
+	@GetMapping("/new-bookings-count")
+	public ResponseEntity<Map<String, Integer>> getNewBookingsCount() {
+	    int count = bookingService.countNewBookings(); 
+	    Map<String, Integer> response = new HashMap<>();
+	    response.put("count", count);
+	    return ResponseEntity.ok(response);
+	}
+
+	
+	
 }
 
 /*

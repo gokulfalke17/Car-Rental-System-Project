@@ -51,26 +51,27 @@ const Bookings = () => {
   }, [searchTerm, bookings]);
 
   const handleStatusUpdate = (bookingId, newStatus) => {
-    axios.put(`http://localhost:4041/api/bookings/update-status/${bookingId}`, { status: newStatus })
+    axios
+      .put(`http://localhost:4041/api/bookings/update-status/${bookingId}`, { status: newStatus })
       .then((response) => {
         const updatedBooking = response.data;
         const updatedList = bookings.map((booking) =>
-          booking.bookingId === updatedBooking.bookingId ? updatedBooking : booking
+          booking.bookingId === updatedBooking.bookingId ? { ...booking, status: newStatus } : booking
         );
         setBookings(updatedList);
-
-        const stillPending = updatedList.some(b => b.status === 'PENDING');
+  
+        const stillPending = updatedList.some((b) => b.status === 'PENDING');
         if (!stillPending) {
           localStorage.removeItem('newBookingNotification');
         }
-
-        alert(`Booking ${newStatus.toLowerCase()} successfully.`);
       })
       .catch(() => {
         alert('Failed to update booking status.');
       });
   };
 
+  
+  
   const handleView = (booking) => {
     alert(`Viewing booking ID: ${booking.bookingId}`);
   };

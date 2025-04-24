@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.mgmt.entity.Booking;
@@ -32,54 +33,37 @@ public class BookingServiceImpl implements IBookingService {
 
 	@Autowired
 	public ILicenseRepository licenseRepository;
+	
+	
+	
+
+	
 
 	/*@Override
 	public Booking bookVehicle(Integer vehicleId, Integer userId, LocalDate fromDate, LocalDate toDate) {
-	
 		Vehicle vehicle = vehicleRepository.findById(vehicleId)
 				.orElseThrow(() -> new RuntimeException("Vehicle not found"));
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found"));
-		
-		
 	
-		// Create a new booking object
-		Booking booking = new Booking();
-		booking.setVehicle(vehicle);
-		booking.setUser(user);
-		booking.setFromDate(fromDate);
-		booking.setToDate(toDate);
-		booking.setBookingDate(LocalDate.now());
-		booking.setStatus(Booking.BookingStatus.PENDING);
-	
-		return bookingRepository.save(booking);
-	}*/
-
-	@Override
-	public Booking bookVehicle(Integer vehicleId, Integer userId, LocalDate fromDate, LocalDate toDate) {
-		Vehicle vehicle = vehicleRepository.findById(vehicleId)
-				.orElseThrow(() -> new RuntimeException("Vehicle not found"));
-
 		if (vehicle.getVariant() == null) {
 			throw new RuntimeException("Vehicle variant not specified");
 		}
-
+	
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
+	
 		if (fromDate.isAfter(toDate)) {
 			throw new RuntimeException("From date cannot be after to date");
 		}
-
+	
 		long numberOfDays = ChronoUnit.DAYS.between(fromDate, toDate) + 1;
-
+	
 		double dailyRate = vehicle.getVariant().getRentPerDay();
 		if (dailyRate <= 0) {
 			throw new RuntimeException("Invalid daily rate for vehicle variant");
 		}
-
+	
 		// Calculate total price
 		double totalPrice = dailyRate * numberOfDays;
-
+	
 		// Create and save booking
 		Booking booking = new Booking();
 		booking.setVehicle(vehicle);
@@ -89,9 +73,55 @@ public class BookingServiceImpl implements IBookingService {
 		booking.setBookingDate(LocalDate.now());
 		booking.setStatus(Booking.BookingStatus.PENDING);
 		booking.setTotalPrice(totalPrice);
-
+	
 		return bookingRepository.save(booking);
 	}
+	*/
+	
+	
+	@Override
+	public Booking bookVehicle(Integer vehicleId, Integer userId, LocalDate fromDate, LocalDate toDate) {
+	    Vehicle vehicle = vehicleRepository.findById(vehicleId)
+	            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+	    if (vehicle.getVariant() == null) {
+	        throw new RuntimeException("Vehicle variant not specified");
+	    }
+
+	    if (!"available".equalsIgnoreCase(vehicle.getStatus())) {
+	        throw new RuntimeException("Vehicle is not available for booking.");
+	    }
+
+	    User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+	    if (fromDate.isAfter(toDate)) {
+	        throw new RuntimeException("From date cannot be after to date");
+	    }
+
+	    long numberOfDays = ChronoUnit.DAYS.between(fromDate, toDate) + 1;
+	    double dailyRate = vehicle.getVariant().getRentPerDay();
+
+	    if (dailyRate <= 0) {
+	        throw new RuntimeException("Invalid daily rate for vehicle variant");
+	    }
+
+	    double totalPrice = dailyRate * numberOfDays;
+
+	    vehicle.setStatus("Booked");
+	    vehicleRepository.save(vehicle); 
+
+	    Booking booking = new Booking();
+	    booking.setVehicle(vehicle);
+	    booking.setUser(user);
+	    booking.setFromDate(fromDate);
+	    booking.setToDate(toDate);
+	    booking.setBookingDate(LocalDate.now());
+	    booking.setStatus(Booking.BookingStatus.PENDING);
+	    booking.setTotalPrice(totalPrice);
+
+	    return bookingRepository.save(booking);
+	}
+
 
 	@Override
 	public List<Booking> getAllBookings() {
@@ -125,5 +155,56 @@ public class BookingServiceImpl implements IBookingService {
 	public List<Booking> getBookingUserReportByUserId(Integer userId) {
 	    return bookingRepository.findBookingsByUserId(userId);
 	}
+	
+	public int countNewBookings() {
+	    return bookingRepository.countByStatus(BookingStatus.PENDING); // Or whatever status you use for new
+	}
+	
+	
+
+	/*@Scheduled(cron = "0 0 0 * * ?") 
+	public void updateExpiredBookings() {
+	    LocalDate today = LocalDate.now();
+	
+	    List<Booking> bookings = bookingRepository.findAll();
+	
+	    for (Booking booking : bookings) {
+	        if (Booking.BookingStatus.CONFIRMED.equals(booking.getStatus()) && booking.getToDate().isBefore(today)) {
+	            Vehicle vehicle = booking.getVehicle();
+	
+	            if (vehicle != null && "Booked".equalsIgnoreCase(vehicle.getStatus())) {  
+	                vehicle.setStatus("Available");  
+	                vehicleRepository.save(vehicle);
+	            }
+	
+	            booking.setStatus(Booking.BookingStatus.COMPLETED);  
+	            bookingRepository.save(booking);  
+	        }
+	    }
+	}*/
+
+	
+	@Scheduled(cron = "0 0 0 * * ?") 
+	public void updateExpiredBookings() {
+	    LocalDate today = LocalDate.now();
+
+	    List<Booking> bookings = bookingRepository.findAll();
+
+	    for (Booking booking : bookings) {
+	        if ("Booked".equalsIgnoreCase(booking.getVehicle().getStatus()) && booking.getToDate().isBefore(today)) {
+	            Vehicle vehicle = booking.getVehicle();
+	            
+	            if (vehicle != null && "Booked".equalsIgnoreCase(vehicle.getStatus())) {
+	                vehicle.setStatus("Available");
+	                vehicleRepository.save(vehicle);  
+	            }
+	        }
+	    }
+	}
+	
+	
+	
+
+
 
 }

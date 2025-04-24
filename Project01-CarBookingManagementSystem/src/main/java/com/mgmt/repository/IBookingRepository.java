@@ -17,7 +17,9 @@ public interface IBookingRepository extends JpaRepository<Booking, Integer> {
 	@Query("SELECT b FROM Booking b WHERE b.user.userId = :userId")
 	public List<Booking> findBookingsByUserId(@Param("userId") Integer userId);
 	
-	public List<Booking> findByUserUserIdAndVehicleVehicleIdAndStatusIn(Integer userId, Integer vehicleId, List<Booking.BookingStatus> statuses
-		);
+	public List<Booking> findByUserUserIdAndVehicleVehicleIdAndStatusIn(Integer userId, Integer vehicleId, List<Booking.BookingStatus> statuses);
+	
+	public int countByStatus(BookingStatus status);
+
 	
 }

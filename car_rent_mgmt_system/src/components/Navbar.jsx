@@ -2,26 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import carLogo from '../assets/car-logo.png';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showNotificationDot, setShowNotificationDot] = useState(false);
+  const [newBookingCount, setNewBookingCount] = useState(0);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    if (storedUser) setUser(storedUser);
 
-    const checkNotification = () => {
-      const isNotified = localStorage.getItem("newBookingNotification") === "true";
-      setShowNotificationDot(isNotified);
+    const fetchNewBookings = () => {
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      if (currentUser?.role === 'admin') {
+        axios.get('http://localhost:4041/api/bookings/new-bookings-count')
+          .then((res) => {
+            const count = res.data.count || 0;
+            setNewBookingCount(count);
+            if (count === 0) {
+              localStorage.removeItem('newBookingNotification');
+            } else {
+              localStorage.setItem('newBookingNotification', true);
+            }
+          })
+          .catch((err) => {
+            console.error("Error fetching new bookings count:", err);
+          });
+      }
     };
 
-    checkNotification();
-    const interval = setInterval(checkNotification, 1000);
+    fetchNewBookings();
+    const interval = setInterval(fetchNewBookings, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,20 +53,13 @@ const Navbar = () => {
             <img src={carLogo} alt="logo" width="40" className="me-2" />
             <strong>Car Rental System</strong>
           </Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
             <span className="navbar-toggler-icon"></span>
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             <ul className="navbar-nav ms-auto d-flex flex-lg-row flex-column gap-2 mt-3 mt-lg-0 align-items-stretch align-items-lg-center w-100">
+
               {user && user.role?.toLowerCase() === "customer" && (
                 <>
                   <li className="nav-item w-100 w-lg-auto">
@@ -102,14 +108,16 @@ const Navbar = () => {
                     </div>
                   </li>
                   <li className="nav-item w-100 w-lg-auto position-relative">
-                    <div className="d-grid">
+                    <div className="d-grid position-relative">
                       <Link to="/admin/bookings" className="btn btn-outline-warning position-relative">
                         Bookings
-                        {showNotificationDot && (
+                        {localStorage.getItem('newBookingNotification') && newBookingCount > 0 && (
                           <span
-                            className="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-                            style={{ width: '10px', height: '10px' }}
-                          ></span>
+                            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style={{ fontSize: '12px', padding: '4px 6px', minWidth: '20px' }}
+                          >
+                            {newBookingCount}
+                          </span>
                         )}
                       </Link>
                     </div>

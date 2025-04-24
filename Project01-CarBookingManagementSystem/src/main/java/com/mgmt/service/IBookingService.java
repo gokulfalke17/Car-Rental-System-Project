@@ -24,6 +24,8 @@ public interface IBookingService {
 	
 	public List<Booking> getBookingUserReportByUserId(Integer userId);
 	
+	public int countNewBookings();
+	
 	
 
 	

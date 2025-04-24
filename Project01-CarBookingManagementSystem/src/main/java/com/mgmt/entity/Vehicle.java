@@ -13,6 +13,7 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer vehicleId;
 
+    @Column(unique = true, nullable = false)
     private String vehicleRegistrationNumber;
 
     private String status; 
