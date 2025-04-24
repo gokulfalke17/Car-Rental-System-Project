@@ -19,8 +19,12 @@ const Login = () => {
       const userData = response.data;
       const userWithRole = { ...userData, role };
       localStorage.setItem("user", JSON.stringify(userWithRole));
-  
+      console.log("LOGIN RESPONSE", response.data); 
       localStorage.setItem("email", email);
+      localStorage.setItem("userId", userData.user.userId);
+
+      // alert(userData.user.userId);
+      
       setMessage("Login successful!");
   
       setTimeout(() => {
