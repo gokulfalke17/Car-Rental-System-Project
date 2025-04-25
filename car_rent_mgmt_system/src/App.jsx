@@ -28,6 +28,7 @@ import ResetPassword from "./components/ResetPassword";
 import FeedbackReport from "./components/FeedbackReport";
 import Reports from "./components/Reports";
 import Dashboard from "./components/Dashboard";
+import CashOnDelivery from "./components/CashOnDelivery";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const location = useLocation();
@@ -182,6 +183,12 @@ const App = () => {
         <Route path="/upi-payment" element={
           <ProtectedRoute>
             <UpiPayment />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/cash-payment" element={
+          <ProtectedRoute>
+            <CashOnDelivery />
           </ProtectedRoute>
         } />
 

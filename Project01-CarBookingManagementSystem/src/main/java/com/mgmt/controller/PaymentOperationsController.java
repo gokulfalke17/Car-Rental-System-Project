@@ -58,6 +58,12 @@ public class PaymentOperationsController {
         Payment payment = paymentService.processUpiPayment(bookingId, upiId, paymentOption);
         return new ResponseEntity<>(payment, HttpStatus.OK);
     }
+    
+    @PostMapping("/cash-on-delivery")
+    public ResponseEntity<Payment> processCashOnDelivery(@RequestParam Integer bookingId) {
+        Payment payment = paymentService.processCashOnDelivery(bookingId);
+        return new ResponseEntity<>(payment, HttpStatus.OK);
+    }
 }
 
 

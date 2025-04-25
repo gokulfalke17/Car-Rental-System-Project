@@ -51,92 +51,105 @@ public class PaymentServiceImpl implements IPaymentService {
 		return payment;
 	
 	}*/
-	
-	
-	 @Override
-	    public Payment processCreditCardPayment(Integer bookingId, String cardNumber, String expiryDate, String cvv, String cardHolderName) {
-	        if (cardNumber == null || cardNumber.length() != 16) {
-	            throw new IllegalArgumentException("Invalid card number");
-	        }
 
-	        // Fetch booking
-	        Booking booking = bookingRepository.findById(bookingId)
-	                .orElseThrow(() -> new RuntimeException("Booking not found"));
+	@Override
+	public Payment processCreditCardPayment(Integer bookingId, String cardNumber, String expiryDate, String cvv,
+			String cardHolderName) {
+		if (cardNumber == null || cardNumber.length() != 16) {
+			throw new IllegalArgumentException("Invalid card number");
+		}
 
-	        // Create and save payment
-	        Payment payment = new Payment();
-	        payment.setBooking(booking);
-	        payment.setAmount(booking.getTotalPrice());
-	        payment.setPaymentMethod("CREDIT_CARD");
-	        payment.setTransactionId(UUID.randomUUID().toString());
-	        payment.setStatus(Payment.PaymentStatus.COMPLETED); 
-	        payment.setPaymentDate(LocalDateTime.now());
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
 
-	        paymentRepository.save(payment);
+		Payment payment = new Payment();
+		payment.setBooking(booking);
+		payment.setAmount(booking.getTotalPrice());
+		payment.setPaymentMethod("CREDIT_CARD");
+		payment.setTransactionId(UUID.randomUUID().toString());
+		payment.setStatus(Payment.PaymentStatus.COMPLETED);
+		payment.setPaymentDate(LocalDateTime.now());
 
-	        // Update booking status
-	        booking.setStatus(Booking.BookingStatus.COMPLETED);
-	        bookingRepository.save(booking);
+		paymentRepository.save(payment);
 
-	        return payment;
-	    }
+		booking.setStatus(Booking.BookingStatus.COMPLETED);
+		bookingRepository.save(booking);
 
-	    // Debit Card Payment
-	    @Override
-	    public Payment processDebitCardPayment(Integer bookingId, String cardNumber, String expiryDate, String cvv, String cardHolderName) {
-	        if (cardNumber == null || cardNumber.length() != 16) {
-	            throw new IllegalArgumentException("Invalid card number");
-	        }
+		return payment;
+	}
 
-	        // Fetch booking
-	        Booking booking = bookingRepository.findById(bookingId)
-	                .orElseThrow(() -> new RuntimeException("Booking not found"));
+	@Override
+	public Payment processDebitCardPayment(Integer bookingId, String cardNumber, String expiryDate, String cvv,
+			String cardHolderName) {
+		if (cardNumber == null || cardNumber.length() != 16) {
+			throw new IllegalArgumentException("Invalid card number");
+		}
 
-	        // Create and save payment
-	        Payment payment = new Payment();
-	        payment.setBooking(booking);
-	        payment.setAmount(booking.getTotalPrice());
-	        payment.setPaymentMethod("DEBIT_CARD");
-	        payment.setTransactionId(UUID.randomUUID().toString());
-	        payment.setStatus(Payment.PaymentStatus.COMPLETED); 
-	        payment.setPaymentDate(LocalDateTime.now());
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
 
-	        paymentRepository.save(payment);
+		Payment payment = new Payment();
+		payment.setBooking(booking);
+		payment.setAmount(booking.getTotalPrice());
+		payment.setPaymentMethod("DEBIT_CARD");
+		payment.setTransactionId(UUID.randomUUID().toString());
+		payment.setStatus(Payment.PaymentStatus.COMPLETED);
+		payment.setPaymentDate(LocalDateTime.now());
 
-	        // Update booking status
-	        booking.setStatus(Booking.BookingStatus.COMPLETED);
-	        bookingRepository.save(booking);
+		paymentRepository.save(payment);
 
-	        return payment;
-	    }
+		booking.setStatus(Booking.BookingStatus.COMPLETED);
+		bookingRepository.save(booking);
 
-	    // UPI Payment
-	    @Override
-	    public Payment processUpiPayment(Integer bookingId, String upiId, String paymentOption) {
-	        if (upiId == null || upiId.isEmpty()) {
-	            throw new IllegalArgumentException("UPI ID is required");
-	        }
+		return payment;
+	}
 
-	        // Fetch booking
-	        Booking booking = bookingRepository.findById(bookingId)
-	                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-	        // Create and save payment
-	        Payment payment = new Payment();
-	        payment.setBooking(booking);
-	        payment.setAmount(booking.getTotalPrice());
-	        payment.setPaymentMethod(paymentOption);  // For UPI, paymentOption will indicate the payment mode
-	        payment.setTransactionId(UUID.randomUUID().toString());
-	        payment.setStatus(Payment.PaymentStatus.COMPLETED);
-	        payment.setPaymentDate(LocalDateTime.now());
+	@Override
+	public Payment processUpiPayment(Integer bookingId, String upiId, String paymentOption) {
+		if (upiId == null || upiId.isEmpty()) {
+			throw new IllegalArgumentException("UPI ID is required");
+		}
 
-	        paymentRepository.save(payment);
 
-	        // Update booking status
-	        booking.setStatus(Booking.BookingStatus.COMPLETED);
-	        bookingRepository.save(booking);
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking not found"));
 
-	        return payment;
-	    }
+		Payment payment = new Payment();
+		payment.setBooking(booking);
+		payment.setAmount(booking.getTotalPrice());
+		payment.setPaymentMethod(paymentOption); 
+		payment.setTransactionId(UUID.randomUUID().toString());
+		payment.setStatus(Payment.PaymentStatus.COMPLETED);
+		payment.setPaymentDate(LocalDateTime.now());
 
+		paymentRepository.save(payment);
+
+		// Update booking status
+		booking.setStatus(Booking.BookingStatus.COMPLETED);
+		bookingRepository.save(booking);
+
+		return payment;
+	}
+
+	@Override
+	public Payment processCashOnDelivery(Integer bookingId) {
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new RuntimeException("Booking Not Found"));
+
+		Payment payment = new Payment();
+		payment.setBooking(booking);
+		payment.setAmount(booking.getTotalPrice());
+		payment.setPaymentMethod("CASH_ON_DELIVERY");
+		payment.setTransactionId(UUID.randomUUID().toString());
+		payment.setStatus(Payment.PaymentStatus.PENDING); 
+		payment.setPaymentDate(LocalDateTime.now());
+
+		paymentRepository.save(payment);
+
+		booking.setStatus(Booking.BookingStatus.CONFIRMED);
+		bookingRepository.save(booking);
+
+		return payment;
+	}
 }

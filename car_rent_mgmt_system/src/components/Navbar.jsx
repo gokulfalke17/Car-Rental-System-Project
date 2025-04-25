@@ -176,7 +176,7 @@ const Navbar = () => {
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className={navLinkStyle} to="/my-report" onClick={closeNavbar}>
+                    <Link className="btn btn-outline-info d-flex align-items-center gap-2 px-3 py-2" to="/my-report" onClick={closeNavbar}>
                       <i className="bi bi-flag nav-icon"></i> Report
                     </Link>
                   </li>

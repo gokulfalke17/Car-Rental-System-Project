@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useNavigate } from 'react-router-dom';
 
 const MyBookings = () => {
-    
     const [bookings, setBookings] = useState([]);
     const [userId, setUserId] = useState(null);
-    const [image, setImage] = useState("");
     const [selectedBookingId, setSelectedBookingId] = useState(null);
     const [selectedBookingDetails, setSelectedBookingDetails] = useState(null);
     const [isLoading, setIsLoading] = useState({
@@ -16,32 +15,32 @@ const MyBookings = () => {
         details: false
     });
     const [allVariants, setAllVariants] = useState([]);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const userIdFromStorage = localStorage.getItem("userId"); 
-        localStorage
-        const imageFromStorage = localStorage.getItem("imageKey");
-        
-        setUserId(userIdFromStorage);
-        setImage(imageFromStorage);
-
-        if (userIdFromStorage) {
-            fetchBookings(userIdFromStorage);
+        const userIdFromStorage = localStorage.getItem("userId");
+        if (!userIdFromStorage) {
+            navigate('/login');
+            return;
         }
 
+        setUserId(userIdFromStorage);
+        fetchBookings(userIdFromStorage);
 
         axios.get("http://localhost:4041/api/variant/all-variants")
             .then((res) => {
-                setAllVariants(res.data); 
+                setAllVariants(res.data);
             })
             .catch((err) => {
                 console.error("Error fetching variants:", err);
+                setError("Failed to load vehicle information");
             });
-    }, []);
+    }, [navigate]);
 
     const fetchBookings = (userId) => {
         setIsLoading(prev => ({ ...prev, bookings: true }));
+        setError(null);
 
         axios.get(`http://localhost:4041/api/bookings/user/${userId}`, {
             params: {
@@ -62,19 +61,23 @@ const MyBookings = () => {
                     setBookings([]);
                     localStorage.removeItem('bookings');
                 }
-                setIsLoading(prev => ({ ...prev, bookings: false }));
             })
             .catch((err) => {
                 console.error("Error fetching bookings:", err);
+                setError(err.response?.data?.message || 'Failed to load bookings');
                 setBookings([]);
                 localStorage.removeItem('bookings');
+            })
+            .finally(() => {
                 setIsLoading(prev => ({ ...prev, bookings: false }));
-                alert('Failed to load bookings. Please try again.');
             });
     };
 
     const handleCancel = (bookingId) => {
+        if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
         setIsLoading(prev => ({ ...prev, cancel: true }));
+
         axios.put(`http://localhost:4041/api/bookings/cancel/${bookingId}`)
             .then(() => {
                 const updatedBookings = bookings.map(booking =>
@@ -82,23 +85,17 @@ const MyBookings = () => {
                         ? { ...booking, status: 'CANCELED' }
                         : booking
                 );
-
                 setBookings(updatedBookings);
-
-                if (updatedBookings.length > 0) {
-                    localStorage.setItem('bookings', JSON.stringify(updatedBookings));
-                } else {
-                    localStorage.removeItem('bookings');
-                }
-
+                localStorage.setItem('bookings', JSON.stringify(updatedBookings));
                 setSelectedBookingId(null);
-                setIsLoading(prev => ({ ...prev, cancel: false }));
-                alert('Booking has been canceled successfully.');
+                alert('Booking canceled successfully!');
             })
             .catch((error) => {
                 console.error('Error canceling booking:', error);
+                alert(error.response?.data?.message || 'Failed to cancel booking');
+            })
+            .finally(() => {
                 setIsLoading(prev => ({ ...prev, cancel: false }));
-                alert('Failed to cancel the booking. Please try again.');
             });
     };
 
@@ -112,7 +109,7 @@ const MyBookings = () => {
                 }
             });
         } else {
-            console.error('Booking not found');
+            alert('Booking not found');
         }
     };
 
@@ -127,6 +124,7 @@ const MyBookings = () => {
 
     const handleViewDetails = (bookingId) => {
         setIsLoading(prev => ({ ...prev, details: true }));
+
         axios.get(`http://localhost:4041/api/bookings/${bookingId}`, {
             params: {
                 includeVehicle: true,
@@ -140,12 +138,13 @@ const MyBookings = () => {
                     totalPrice: res.data.totalPrice || 0
                 };
                 setSelectedBookingDetails(bookingDetails);
-                setIsLoading(prev => ({ ...prev, details: false }));
             })
             .catch((err) => {
                 console.error("Error fetching booking details:", err);
+                alert(err.response?.data?.message || 'Failed to load booking details');
+            })
+            .finally(() => {
                 setIsLoading(prev => ({ ...prev, details: false }));
-                alert('Failed to load booking details. Please try again.');
             });
     };
 
@@ -164,123 +163,197 @@ const MyBookings = () => {
         return { days, totalPrice, dailyRate };
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+    const getStatusBadge = (status) => {
+        const statusConfig = {
+            'PENDING': { bg: 'bg-warning', icon: 'bi-hourglass' },
+            'ACCEPTED': { bg: 'bg-success', icon: 'bi-check-circle' },
+            'CANCELED': { bg: 'bg-danger', icon: 'bi-x-circle' },
+            'COMPLETED': { bg: 'bg-primary', icon: 'bi-check-all' },
+            'REJECTED': { bg: 'bg-secondary', icon: 'bi-slash-circle' }
+        };
+
+        const config = statusConfig[status] || { bg: 'bg-light text-dark', icon: 'bi-question-circle' };
+
+        return (
+            <span className={`badge ${config.bg} d-flex align-items-center gap-1`}>
+                <i className={`bi ${config.icon}`}></i>
+                {status}
+            </span>
+        );
+    };
+
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4 text-center fw-bold text-primary">My Bookings</h2>
+        <div className="container py-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+            <div className="row justify-content-center">
+                <div className="col-12 col-lg-10">
+                    <div className="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                        <div className="card-header bg-primary text-white py-3">
+                            <div className="d-flex justify-content-between align-items-center">
+                                <h2 className="h4 mb-0">
+                                    <i className="bi bi-calendar-check me-2"></i>
+                                    My Bookings
+                                </h2>
+                                {userId && (
+                                    <span className="badge bg-light text-primary">
+                                        User ID: {userId}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
 
-            {isLoading.bookings ? (
-                <div className="text-center">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <p className="mt-2">Loading bookings...</p>
-                </div>
-            ) : bookings.length === 0 ? (
-                <div className="alert alert-info text-center">No bookings found.</div>
-            ) : (
-                <div className="row">
-                    {bookings.map((booking) => {
-                        const { days, totalPrice, dailyRate } = calculateBookingDetails(booking);
-
-                        const variantImage = allVariants.find(
-                            (variant) =>
-                                variant.vehicles?.some(
-                                    (v) => v.vehicleId === booking.vehicle?.vehicleId
-                                )
-                        )?.imageUrl;
-
-                        const fullImageUrl = variantImage
-                            ? `http://localhost:4041/imgs/${variantImage}`
-                            : "/fallback.jpg";
-
-                        return (
-                            <div key={booking.bookingId} className="col-12 col-sm-6 col-md-4 mb-4">
-                                <div className="card h-100 shadow-sm border-0" style={{ borderRadius: '15px' }}>
-                                    <img
-                                        src={fullImageUrl}  
-                                        className="card-img-top"
-                                        alt="Vehicle"
-                                        style={{
-                                            height: "200px",
-                                            objectFit: "cover",
-                                            borderTopLeftRadius: '15px',
-                                            borderTopRightRadius: '15px'
-                                        }}
-                                    />
-                                    <div className="card-body d-flex flex-column">
-                                        <h5 className="card-title text-success">Booking #{booking.bookingId}</h5>
-                                        <h6 className="card-subtitle mb-2">
-                                            {booking.vehicle.make} {booking.vehicle.model}
-                                        </h6>
-                                        <p className="mb-1 pt-2">
-                                            <strong>Status:</strong>
-                                            <span className={`badge ms-2 ${booking.status === 'ACCEPTED' ? 'bg-success' :
-                                                booking.status === 'PENDING' ? 'bg-warning text-dark' :
-                                                    booking.status === 'CANCELED' ? 'bg-danger' :
-                                                        booking.status === 'COMPLETED' ? 'bg-primary' : 'bg-secondary'
-                                                }`}>
-                                                {booking.status}
-                                            </span>
-                                        </p>
-                                        <p className="card-text">Booking Date: {new Date(booking.bookingDate).toLocaleDateString()}</p>
-                                        <p className="card-text">Total Price: ₹{totalPrice}</p>
-
-                                        <div className="mt-auto d-flex flex-wrap gap-2 pt-4">
-                                            {booking.status === 'COMPLETED' ? (
-                                                <button
-                                                    className="btn btn-info btn-sm flex-grow-1"
-                                                    onClick={() => handleFeedback(booking.vehicle.vehicleId, booking.vehicle)}
-                                                >
-                                                    Give Feedback
-                                                </button>
-                                            ) : null}
-
-                                            {booking.status === 'ACCEPTED' && (
-                                                <button
-                                                    className="btn btn-outline-info btn-sm flex-grow-1"
-                                                    onClick={() => handleViewDetails(booking.bookingId)}
-                                                    disabled={isLoading.details}
-                                                >
-                                                    {isLoading.details && selectedBookingDetails?.bookingId === booking.bookingId ? (
-                                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                    ) : 'Payment Details'}
-                                                </button>
-                                            )}
-                                        </div>
+                        <div className="card-body p-4">
+                            {isLoading.bookings ? (
+                                <div className="text-center py-5">
+                                    <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p className="mt-3 text-primary fs-5">Loading your bookings...</p>
+                                </div>
+                            ) : error ? (
+                                <div className="alert alert-danger d-flex align-items-center">
+                                    <i className="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                                    <div>
+                                        <h5 className="alert-heading">Error</h5>
+                                        <p className="mb-0">{error}</p>
+                                        <button
+                                            className="btn btn-sm btn-outline-danger mt-2"
+                                            onClick={() => fetchBookings(userId)}
+                                        >
+                                            <i className="bi bi-arrow-repeat me-1"></i> Try Again
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            ) : bookings.length === 0 ? (
+                                <div className="text-center py-5">
+                                    <i className="bi bi-calendar-x text-muted" style={{ fontSize: '3rem' }}></i>
+                                    <h4 className="mt-3 text-muted">No bookings found</h4>
+                                    <p className="text-muted">You haven't made any bookings yet</p>
+                                    <button
+                                        className="btn btn-primary mt-3"
+                                        onClick={() => navigate('/explore')}
+                                    >
+                                        <i className="bi bi-car-front me-2"></i> Explore Vehicles
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="row g-4">
+                                    {bookings.map((booking) => {
+                                        const { days, totalPrice, dailyRate } = calculateBookingDetails(booking);
+                                        const variantImage = allVariants.find(
+                                            (variant) =>
+                                                variant.vehicles?.some(
+                                                    (v) => v.vehicleId === booking.vehicle?.vehicleId
+                                                )
+                                        )?.imageUrl;
 
-            {selectedBookingId && (
-                <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header bg-danger text-white">
-                                <h5 className="modal-title">Cancel Booking</h5>
-                                <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedBookingId(null)}></button>
-                            </div>
-                            <div className="modal-body">
-                                Are you sure you want to cancel this booking?
-                            </div>
-                            <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setSelectedBookingId(null)}>Close</button>
-                                <button className="btn btn-danger" onClick={() => handleCancel(selectedBookingId)}>Yes, Cancel</button>
-                            </div>
+                                        const fullImageUrl = variantImage
+                                            ? `http://localhost:4041/imgs/${variantImage}`
+                                            : "https://via.placeholder.com/300x200?text=Vehicle+Image";
+
+                                        return (
+                                            <div key={booking.bookingId} className="col-12 col-md-6 col-lg-4">
+                                                <div className="card h-100 border-0 shadow-sm" style={{ borderRadius: '15px' }}>
+                                                    <div className="position-relative">
+                                                        <img
+                                                            src={fullImageUrl}
+                                                            className="card-img-top"
+                                                            alt="Vehicle"
+                                                            style={{
+                                                                height: "200px",
+                                                                objectFit: "cover",
+                                                                borderTopLeftRadius: '15px',
+                                                                borderTopRightRadius: '15px'
+                                                            }}
+                                                            onError={(e) => {
+                                                                e.target.src = "https://via.placeholder.com/300x200?text=Vehicle+Image";
+                                                            }}
+                                                        />
+                                                        <div className="position-absolute top-0 end-0 m-2">
+                                                            {getStatusBadge(booking.status)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="card-body d-flex flex-column">
+                                                        <h5 className="card-title text-primary">
+                                                            #{booking.bookingId} - {booking.vehicle?.make} {booking.vehicle?.model}
+                                                        </h5>
+                                                        <div className="mb-2">
+                                                            <small className="text-muted d-flex align-items-center">
+                                                                <i className="bi bi-calendar-date me-2"></i>
+                                                                {formatDate(booking.fromDate)} to {formatDate(booking.toDate)}
+                                                            </small>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                                            <span className="badge bg-light text-dark">
+                                                                <i className="bi bi-clock-history me-1"></i>
+                                                                {days} {days === 1 ? 'day' : 'days'}
+                                                            </span>
+                                                            <h6 className="mb-0 text-success">
+                                                                ₹{totalPrice}
+                                                            </h6>
+                                                        </div>
+
+                                                        <div className="mt-auto d-flex flex-wrap gap-2">
+                                                            <button
+                                                                className="btn btn-sm btn-outline-primary flex-grow-1"
+                                                                onClick={() => handleViewDetails(booking.bookingId)}
+                                                                disabled={isLoading.details}
+                                                            >
+                                                                {isLoading.details && selectedBookingDetails?.bookingId === booking.bookingId ? (
+                                                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                                ) : (
+                                                                    <i className="bi bi-info-circle me-2"></i>
+                                                                )}
+                                                                Details
+                                                            </button>
+
+                                                            {booking.status === 'COMPLETED' && (
+                                                                <button
+                                                                    className="btn btn-sm btn-info flex-grow-1"
+                                                                    onClick={() => handleFeedback(booking.vehicle.vehicleId, booking.vehicle)}
+                                                                >
+                                                                    <i className="bi bi-chat-square-text me-2"></i>
+                                                                    Feedback
+                                                                </button>
+                                                            )}
+
+                                                            {booking.status === 'ACCEPTED' && (
+                                                                <button
+                                                                    className="btn btn-sm btn-success flex-grow-1"
+                                                                    onClick={() => handlePay(booking.bookingId)}
+                                                                >
+                                                                    <i className="bi bi-credit-card me-2"></i>
+                                                                    Pay Now
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
 
+            {/* Booking Details Modal */}
             {selectedBookingDetails && (
-                <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+                <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
                     <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content">
+                        <div className="modal-content border-0 shadow-lg">
                             <div className="modal-header bg-primary text-white">
-                                <h5 className="modal-title">Booking Details</h5>
+                                <h5 className="modal-title d-flex align-items-center">
+                                    <i className="bi bi-file-text me-2"></i>
+                                    Booking Details
+                                </h5>
                                 <button
                                     type="button"
                                     className="btn-close btn-close-white"
@@ -289,46 +362,106 @@ const MyBookings = () => {
                                 ></button>
                             </div>
                             <div className="modal-body">
-                                <p><strong>Booking ID:</strong> {selectedBookingDetails.bookingId}</p>
-                                <p><strong>Status:</strong> {selectedBookingDetails.status}</p>
-                                <p><strong>Vehicle Registration:</strong> {selectedBookingDetails.vehicle?.vehicleRegistrationNumber}</p>
-                                <p><strong>Booking Date:</strong> {new Date(selectedBookingDetails.bookingDate).toLocaleDateString()}</p>
-                                <p><strong>From:</strong> {new Date(selectedBookingDetails.fromDate).toLocaleDateString()}</p>
-                                <p><strong>To:</strong> {new Date(selectedBookingDetails.toDate).toLocaleDateString()}</p>
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <h6 className="text-primary border-bottom pb-2">Booking Information</h6>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">ID:</span>
+                                            <span>#{selectedBookingDetails.bookingId}</span>
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">Status:</span>
+                                            <span>{getStatusBadge(selectedBookingDetails.status)}</span>
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">Booked On:</span>
+                                            <span>{formatDate(selectedBookingDetails.bookingDate)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <h6 className="text-primary border-bottom pb-2">Rental Period</h6>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">From:</span>
+                                            <span>{formatDate(selectedBookingDetails.fromDate)}</span>
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">To:</span>
+                                            <span>{formatDate(selectedBookingDetails.toDate)}</span>
+                                        </div>
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">Duration:</span>
+                                            <span>{calculateBookingDetails(selectedBookingDetails).days} days</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <div className="mt-4">
-                                    <p className="text-primary h5 mb-3">
-                                        <strong>Total Price:</strong> ₹{selectedBookingDetails.totalPrice}
-                                    </p>
+                                <div className="row mt-3">
+                                    <div className="col-md-6 mb-3">
+                                        <h6 className="text-primary border-bottom pb-2">Vehicle Details</h6>
+
+                                        <div className="d-flex mb-2">
+                                            <span className="fw-medium text-secondary me-2">Reg No:</span>
+                                            <span>{selectedBookingDetails.vehicle?.vehicleRegistrationNumber}</span>
+                                        </div>
+
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <h6 className="text-primary border-bottom pb-2">Payment Summary</h6>
+
+
+                                        <div className="d-flex justify-content-between fw-bold mt-3  ">
+                                            <span className="text-primary">Total:</span>
+                                            <span className="text-success">₹{selectedBookingDetails.totalPrice}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setSelectedBookingDetails(null)}>Close</button>
+                            <div className="modal-footer border-top-0">
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => setSelectedBookingDetails(null)}
+                                >
+                                    <i className="bi bi-x-lg me-1"></i> Close
+                                </button>
 
                                 {selectedBookingDetails.status === 'ACCEPTED' && (
                                     <button
                                         className="btn btn-success"
-                                        onClick={() => handlePay(selectedBookingDetails.bookingId)}
+                                        onClick={() => {
+                                            setSelectedBookingDetails(null);
+                                            handlePay(selectedBookingDetails.bookingId);
+                                        }}
                                     >
-                                        Pay Now
+                                        <i className="bi bi-credit-card me-1"></i> Proceed to Payment
                                     </button>
                                 )}
 
                                 {selectedBookingDetails.status === 'COMPLETED' ? (
                                     <button
                                         className="btn btn-info"
-                                        onClick={() => handleFeedback(selectedBookingDetails.vehicle.vehicleId, selectedBookingDetails.vehicle)}
+                                        onClick={() => {
+                                            setSelectedBookingDetails(null);
+                                            handleFeedback(selectedBookingDetails.vehicle.vehicleId, selectedBookingDetails.vehicle);
+                                        }}
                                     >
-                                        Give Feedback
+                                        <i className="bi bi-chat-square-text me-1"></i> Give Feedback
                                     </button>
                                 ) : selectedBookingDetails.status !== 'CANCELED' && (
                                     <button
                                         className="btn btn-danger"
                                         onClick={() => {
                                             setSelectedBookingDetails(null);
-                                            setSelectedBookingId(selectedBookingDetails.bookingId);
+                                            if (window.confirm("Are you sure you want to cancel this booking?")) {
+                                                handleCancel(selectedBookingDetails.bookingId);
+                                            }
                                         }}
+                                        disabled={isLoading.cancel}
                                     >
+                                        {isLoading.cancel ? (
+                                            <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                                        ) : (
+                                            <i className="bi bi-x-circle me-1"></i>
+                                        )}
                                         Cancel Booking
                                     </button>
                                 )}
