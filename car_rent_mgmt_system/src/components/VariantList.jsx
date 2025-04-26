@@ -17,7 +17,7 @@ const VariantList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   const pageSize = 3;
 
   useEffect(() => {
@@ -40,8 +40,8 @@ const VariantList = () => {
   };
 
   const handleDeleteClick = (variantId) => {
-    setVariantToDelete(variantId); 
-    setShowConfirmDeleteModal(true); 
+    setVariantToDelete(variantId);
+    setShowConfirmDeleteModal(true);
   };
 
   const deleteVariant = async () => {
@@ -55,43 +55,43 @@ const VariantList = () => {
       setError("Failed to delete variant. Please try again.");
     } finally {
       setLoading(false);
-      setShowConfirmDeleteModal(false); 
+      setShowConfirmDeleteModal(false);
     }
   };
 
   const renderPagination = () => (
     <Pagination className="justify-content-center mt-4">
-      <Pagination.First 
-        onClick={() => setCurrentPage(0)} 
-        disabled={currentPage === 0 || loading} 
+      <Pagination.First
+        onClick={() => setCurrentPage(0)}
+        disabled={currentPage === 0 || loading}
       />
-      <Pagination.Prev 
-        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))} 
-        disabled={currentPage === 0 || loading} 
+      <Pagination.Prev
+        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+        disabled={currentPage === 0 || loading}
       />
       {[...Array(totalPages)].map((_, index) => (
-        <Pagination.Item 
-          key={index} 
-          active={index === currentPage} 
+        <Pagination.Item
+          key={index}
+          active={index === currentPage}
           onClick={() => !loading && setCurrentPage(index)}
           disabled={loading}
         >
           {index + 1}
         </Pagination.Item>
       ))}
-      <Pagination.Next 
-        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))} 
-        disabled={currentPage === totalPages - 1 || loading} 
+      <Pagination.Next
+        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+        disabled={currentPage === totalPages - 1 || loading}
       />
-      <Pagination.Last 
-        onClick={() => setCurrentPage(totalPages - 1)} 
-        disabled={currentPage === totalPages - 1 || loading} 
+      <Pagination.Last
+        onClick={() => setCurrentPage(totalPages - 1)}
+        disabled={currentPage === totalPages - 1 || loading}
       />
     </Pagination>
   );
 
   const getFuelTypeBadge = (fuelType) => {
-    switch(fuelType.toLowerCase()) {
+    switch (fuelType.toLowerCase()) {
       case 'petrol': return 'primary';
       case 'diesel': return 'warning';
       case 'electric': return 'success';
@@ -145,15 +145,23 @@ const VariantList = () => {
                         alt={variant.variantName}
                         thumbnail
                         className="img-fluid rounded shadow-sm"
-                        style={{ 
-                          maxWidth: "150px", 
+                        style={{
+                          maxWidth: "150px",
                           height: "auto",
                           border: "2px solid #dee2e6"
                         }}
                       />
                     </td>
                     <td>
-                      <span className="fw-semibold text-dark">{variant.variantName}</span>
+                      <span className="fw-semibold text-dark">
+                        {variant.variantName
+                          .toLowerCase()
+                          .split(' ')
+                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ')
+                        }
+                      </span>
+
                     </td>
                     <td>
                       <small className="text-muted">{variant.variantDesc}</small>
@@ -190,9 +198,9 @@ const VariantList = () => {
                       <div className="d-flex flex-column align-items-center gap-2">
                         <div className="d-flex justify-content-center gap-2 w-100">
                           <Link to={`/variantList/update/${variant.variantId}`} className="w-100">
-                            <Button 
-                              variant="outline-warning" 
-                              size="sm" 
+                            <Button
+                              variant="outline-warning"
+                              size="sm"
                               className="w-100 d-flex align-items-center justify-content-center"
                               disabled={loading}
                             >
@@ -223,7 +231,7 @@ const VariantList = () => {
                           disabled={loading}
                         >
                           <i className="bi bi-car-front me-1"></i>
-                          {selectedVariantId === variant.variantId ? "Hide" : "Vehicles"}
+                          {selectedVariantId === variant.variantId ? "Hide" : "Add Registraction Number"}
                         </Button>
                       </div>
                     </td>
@@ -249,8 +257,8 @@ const VariantList = () => {
         </div>
       )}
 
-      <Modal 
-        show={showConfirmDeleteModal} 
+      <Modal
+        show={showConfirmDeleteModal}
         onHide={() => !loading && setShowConfirmDeleteModal(false)}
         centered
       >
@@ -264,15 +272,15 @@ const VariantList = () => {
           <p className="text-muted">This action cannot be undone.</p>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => setShowConfirmDeleteModal(false)}
             disabled={loading}
           >
             Cancel
           </Button>
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             onClick={deleteVariant}
             disabled={loading}
           >

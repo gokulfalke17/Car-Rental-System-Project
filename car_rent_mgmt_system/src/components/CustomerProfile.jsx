@@ -19,7 +19,7 @@ const CustomerProfile = () => {
       try {
         setIsLoading(true);
         setError('');
-        
+
         const Customeremail = localStorage.getItem("email");
 
         if (!Customeremail) {
@@ -40,7 +40,7 @@ const CustomerProfile = () => {
 
         const storedUserId = localStorage.getItem("userId");
         if (storedUserId !== currentUser.userId) {
-          localStorage.clear(); 
+          localStorage.clear();
           localStorage.setItem("userId", currentUser.userId);
           localStorage.setItem("email", currentUser.email);
         }
@@ -71,7 +71,7 @@ const CustomerProfile = () => {
 
     fetchUserAndLicense();
   }, [navigate]);
-  
+
   const navigateToAddLicense = () => {
     navigate('/add-license');
   };
@@ -111,7 +111,7 @@ const CustomerProfile = () => {
           <div>
             <h5 className="alert-heading">Error Loading Profile</h5>
             <p className="mb-0">{error}</p>
-            <button 
+            <button
               className="btn btn-sm btn-outline-danger mt-2"
               onClick={() => window.location.reload()}
             >
@@ -149,16 +149,16 @@ const CustomerProfile = () => {
                     <div className="col-md-4 text-center mb-4 mb-md-0">
                       <div className="position-relative d-inline-block">
                         <img
-                          src={!profileImageError && user.profileImage 
+                          src={!profileImageError && user.profileImage
                             ? `http://localhost:4041/imgs/${user.profileImage}`
                             : "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg"}
                           alt="Profile"
                           className="rounded-circle shadow"
-                          style={{ 
-                            width: '180px', 
-                            height: '180px', 
-                            objectFit: 'cover', 
-                            border: '5px solid #3498db' 
+                          style={{
+                            width: '180px',
+                            height: '180px',
+                            objectFit: 'cover',
+                            border: '5px solid #3498db'
                           }}
                           onError={() => handleImageError('profile')}
                         />
@@ -169,8 +169,8 @@ const CustomerProfile = () => {
                     </div>
 
                     <div className="col-md-8">
-                      <div className="p-4 rounded" style={{ 
-                        backgroundColor: '#ffffff', 
+                      <div className="p-4 rounded" style={{
+                        backgroundColor: '#ffffff',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                         border: '1px solid rgba(0,0,0,0.05)'
                       }}>
@@ -184,7 +184,10 @@ const CustomerProfile = () => {
                               <i className="bi bi-person-fill text-secondary me-2"></i>
                               <span className="fw-medium text-secondary">Full Name</span>
                             </div>
-                            <p className="ps-4">{user.firstName} {user.lastName}</p>
+                            <p className="card-title text-info mb-0 fw-bold">
+                              {user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1)}{' '}
+                              {user.lastName.charAt(0).toUpperCase() + user.lastName.slice(1)}
+                            </p>
                           </div>
                           <div className="col-md-6 mb-3">
                             <div className="d-flex align-items-center mb-2">
@@ -221,7 +224,7 @@ const CustomerProfile = () => {
                           <i className="bi bi-exclamation-triangle-fill me-2"></i>
                           You haven't added your driving license yet
                         </div>
-                        <button 
+                        <button
                           className="btn btn-primary btn-lg px-4 py-2 rounded-pill"
                           onClick={navigateToAddLicense}
                         >
@@ -242,8 +245,8 @@ const CustomerProfile = () => {
                         {showLicense && (
                           <div className="row justify-content-center">
                             <div className="col-lg-8">
-                              <div className="p-4 rounded" style={{ 
-                                backgroundColor: '#ffffff', 
+                              <div className="p-4 rounded" style={{
+                                backgroundColor: '#ffffff',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                                 border: '1px solid rgba(0,0,0,0.05)'
                               }}>
@@ -274,12 +277,12 @@ const CustomerProfile = () => {
                                   </h6>
                                   <div className="d-flex justify-content-center">
                                     <img
-                                      src={!licenseImageError 
+                                      src={!licenseImageError
                                         ? `http://localhost:4041/imgs/${license.licensePhoto}`
                                         : "https://via.placeholder.com/300x200?text=License+Image+Not+Found"}
                                       alt="License"
                                       className="img-fluid border rounded shadow"
-                                      style={{ 
+                                      style={{
                                         maxHeight: '300px',
                                         maxWidth: '100%'
                                       }}

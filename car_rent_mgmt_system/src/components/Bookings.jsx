@@ -13,13 +13,13 @@ const Bookings = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showConfirmation, setShowConfirmation] = useState({ id: null, show: false });
-  const recordsPerPage = 6;
+  const recordsPerPage = 5;
 
   const navigate = useNavigate();
 
   const checkAuthAndFetchData = () => {
     let user = null;
-    
+
     const sessionUser = sessionStorage.getItem('user');
     if (sessionUser) {
       try {
@@ -29,7 +29,7 @@ const Bookings = () => {
         setError('Error loading user data');
       }
     }
-    
+
     if (!user) {
       const localUser = localStorage.getItem('user');
       if (localUser) {
@@ -42,14 +42,14 @@ const Bookings = () => {
         }
       }
     }
-    
+
     setCurrentUser(user);
-    
+
     if (!user || user.role !== 'admin') {
       navigate('/');
       return;
     }
-    
+
     fetchBookings(user);
   };
 
@@ -57,57 +57,59 @@ const Bookings = () => {
     if (!user || user.role !== 'admin') {
       return;
     }
-    
+
     setLoading(true);
     setError(null);
-    
+
     axios.get('http://localhost:4041/api/bookings/admin/bookings', {
       headers: {
         'Authorization': `Bearer ${sessionStorage.getItem('token') || localStorage.getItem('token')}`
       }
     })
-    .then((response) => {
-      const allBookings = response.data;
-      setBookings(allBookings);
-      setFilteredBookings(allBookings);
+      .then((response) => {
+        // const allBookings = response.data;
+        const sortedBookings = response.data.sort((a, b) => b.bookingId - a.bookingId);
 
-      const hasPending = allBookings.some(booking => booking.status === 'PENDING');
-      if (hasPending) {
-        sessionStorage.setItem('newBookingNotification', 'true');
-      } else {
-        sessionStorage.removeItem('newBookingNotification');
-      }
+        setBookings(sortedBookings);
+        setFilteredBookings(sortedBookings);
 
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error("Error fetching bookings:", err);
-      setError(err.response?.data?.message || 'Error fetching bookings. Please try again.');
-      setLoading(false);
-      
-      if (err.response?.status === 401) {
-        navigate('/login');
-      }
-    });
+        const hasPending = sortedBookings.some(booking => booking.status === 'PENDING');
+        if (hasPending) {
+          sessionStorage.setItem('newBookingNotification', 'true');
+        } else {
+          sessionStorage.removeItem('newBookingNotification');
+        }
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching bookings:", err);
+        setError(err.response?.data?.message || 'Error fetching bookings. Please try again.');
+        setLoading(false);
+
+        if (err.response?.status === 401) {
+          navigate('/login');
+        }
+      });
   };
 
   useEffect(() => {
     checkAuthAndFetchData();
-    
+
     const handleStorageChange = () => {
       checkAuthAndFetchData();
     };
-    
+
     const handleUserLogout = () => {
       setBookings([]);
       setFilteredBookings([]);
       navigate('/');
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('auth-change', handleStorageChange);
     window.addEventListener('user-logout', handleUserLogout);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('auth-change', handleStorageChange);
@@ -127,7 +129,7 @@ const Bookings = () => {
 
   const handleStatusUpdate = (bookingId, newStatus) => {
     setLoading(true);
-    axios.put(`http://localhost:4041/api/bookings/update-status/${bookingId}`, 
+    axios.put(`http://localhost:4041/api/bookings/update-status/${bookingId}`,
       { status: newStatus },
       {
         headers: {
@@ -135,28 +137,28 @@ const Bookings = () => {
         }
       }
     )
-    .then((response) => {
-      const updatedBooking = response.data;
-      const updatedList = bookings.map((booking) =>
-        booking.bookingId === updatedBooking.bookingId ? { ...booking, status: newStatus } : booking
-      );
-      setBookings(updatedList);
-      setFilteredBookings(updatedList);
+      .then((response) => {
+        const updatedBooking = response.data;
+        const updatedList = bookings.map((booking) =>
+          booking.bookingId === updatedBooking.bookingId ? { ...booking, status: newStatus } : booking
+        );
+        setBookings(updatedList);
+        setFilteredBookings(updatedList);
 
-      const stillPending = updatedList.some((b) => b.status === 'PENDING');
-      if (!stillPending) {
-        sessionStorage.removeItem('newBookingNotification');
-        localStorage.removeItem('newBookingNotification');
-      }
+        const stillPending = updatedList.some((b) => b.status === 'PENDING');
+        if (!stillPending) {
+          sessionStorage.removeItem('newBookingNotification');
+          localStorage.removeItem('newBookingNotification');
+        }
 
-      setShowConfirmation({ id: null, show: false });
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error("Error updating booking status:", err);
-      setError(err.response?.data?.message || 'Failed to update booking status.');
-      setLoading(false);
-    });
+        setShowConfirmation({ id: null, show: false });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error updating booking status:", err);
+        setError(err.response?.data?.message || 'Failed to update booking status.');
+        setLoading(false);
+      });
   };
 
   const handleView = (booking) => {
@@ -302,7 +304,9 @@ const Bookings = () => {
                           </td>
                           <td>
                             <div className="d-flex flex-column">
-                              <span className="fw-medium">{booking.user?.firstName} {booking.user?.lastName}</span>
+                              <span className="fw-medium">
+                                {booking.user?.firstName?.toUpperCase()} {booking.user?.lastName?.toUpperCase()}
+                              </span>
                               <small className="text-muted">{booking.user?.email}</small>
                             </div>
                           </td>
@@ -327,6 +331,7 @@ const Bookings = () => {
                                 className="btn btn-sm btn-outline-primary"
                                 onClick={() => handleView(booking)}
                                 title="View Details"
+                                disabled
                               >
                                 <i className="bi bi-eye-fill"></i>
                               </button>

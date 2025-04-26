@@ -11,14 +11,29 @@ const CustomerList = () => {
     axios
       .get("http://localhost:4041/api/users")
       .then((res) => {
-        setCustomers(res.data);  
-        setLoading(false);        
+        setCustomers(res.data);
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching customer data:", err);
-        setLoading(false); 
+        setLoading(false);
       });
   }, []);
+
+  const handleDelete = (customerId) => {
+    const confirmDelete = window.confirm("Do You want to delete This Customer??");
+    if (confirmDelete) {
+      axios
+        .delete(`http://localhost:4041/api/users/${customerId}`)
+        .then((res) => {
+          setCustomers(customers.filter(customer => customer.userId !== customerId));
+        })
+        .catch((err) => {
+          console.error("Error deleting customer:", err);
+          alert("There was an error deleting the customer");
+        });
+    }
+  };
 
   if (loading) {
     return (
@@ -39,33 +54,43 @@ const CustomerList = () => {
         </h2>
         <p className="text-muted">View and manage all registered customers</p>
       </div>
-      
+
       <div className="row g-4">
         {customers.length > 0 ? (
           customers.map((customer) => (
             <div className="col-md-6 col-lg-4" key={customer.userId}>
-              <div className="card h-100 border-0 shadow-sm rounded-3" style={{ backgroundColor: '#ffffff' }}>
+              <div className="card h-100 border-0 shadow-sm rounded-3" style={{ backgroundColor: '#ffffff', position: 'relative' }}>
                 <div className="card-body p-4">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                      <i className="bi bi-person-fill text-primary fs-4"></i>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                        <i className="bi bi-person-fill text-primary fs-4"></i>
+                      </div>
+                      <h5 className="card-title text-info mb-0 fw-bold">
+                        {customer.firstName.charAt(0).toUpperCase() + customer.firstName.slice(1)}{' '}
+                        {customer.lastName.charAt(0).toUpperCase() + customer.lastName.slice(1)}
+                      </h5>
                     </div>
-                    <h5 className="card-title text-info mb-0 fw-bold">
-                      {customer.firstName} {customer.lastName}
-                    </h5>
+
+                    <button
+                      className="btn btn-danger btn-sm position-absolute top-0 end-0 mt-3 me-3"
+                      onClick={() => handleDelete(customer.userId)}
+                    >
+                      <i className="bi bi-trash-fill"></i>
+                    </button>
                   </div>
-                  
+
                   <div className="mb-3">
                     <div className="d-flex align-items-center mb-2">
                       <i className="bi bi-envelope-fill text-secondary me-2"></i>
                       <span><strong>Email:</strong> {customer.email}</span>
                     </div>
-                    
+
                     <div className="d-flex align-items-center mb-2">
                       <i className="bi bi-telephone-fill text-secondary me-2"></i>
                       <span><strong>Contact:</strong> {customer.contact}</span>
                     </div>
-                    
+
                     <div className="d-flex align-items-start">
                       <i className="bi bi-geo-alt-fill text-secondary me-2 mt-1"></i>
                       <span><strong>Address:</strong> {customer.city}, {customer.state}, {customer.pincode}</span>

@@ -75,25 +75,33 @@ public class UserServiceImpl implements IUserService {
 
 	@Override
 	public String forgotUserPassword(String email) {
-	    User user = userRepository.findByEmail(email);
-	    if (user == null) {
-	        return "User not found with email: " + email;
-	    }
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			return "User not found with email: " + email;
+		}
 
-	    String resetLink = "http://localhost:3000/reset-password?email=" + email; 
-	    return "Password Reset Link sent to " + email + ". Link: " + resetLink;
+		String resetLink = "http://localhost:3000/reset-password?email=" + email;
+		return "Password Reset Link sent to " + email + ". Link: " + resetLink;
 	}
 
-	
 	@Override
 	public String resetPassword(String email, String newPassword) {
-	    User user = userRepository.findByEmail(email);
-	    if (user == null) {
-	        return "User Not Found with Email :: " + email;
-	    }
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			return "User Not Found with Email :: " + email;
+		}
 
-	    user.setPassword(passwordEncoder.encode(newPassword));
-	    userRepository.save(user);
-	    return "Password Updated Successfully...";
+		user.setPassword(passwordEncoder.encode(newPassword));
+		userRepository.save(user);
+		return "Password Updated Successfully...";
+	}
+
+	@Override
+	public boolean deleteCustomerById(Integer userId) {
+		if (userRepository.existsById(userId)) {
+			userRepository.deleteById(userId);
+			return true;
+		}
+		return false;
 	}
 }

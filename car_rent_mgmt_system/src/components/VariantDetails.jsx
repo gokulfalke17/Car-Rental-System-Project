@@ -38,13 +38,13 @@ function VariantDetails({ variant }) {
 
     const validateForm = () => {
         const errors = {};
-        
+
         if (!vehicleNumber.trim()) {
             errors.vehicleNumber = 'Registration number is required';
         } else if (!/^[A-Za-z0-9 -]+$/.test(vehicleNumber)) {
             errors.vehicleNumber = 'Invalid registration number format';
         }
-        
+
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -52,7 +52,7 @@ function VariantDetails({ variant }) {
     const handleAddVehicle = async (e) => {
         e.preventDefault();
         setSuccess(null);
-        
+
         if (!validateForm()) return;
 
         try {
@@ -126,8 +126,8 @@ function VariantDetails({ variant }) {
                             fluid
                             rounded
                             className="shadow"
-                            style={{ 
-                                maxHeight: '250px', 
+                            style={{
+                                maxHeight: '250px',
                                 objectFit: 'cover',
                                 border: '3px solid #e9ecef'
                             }}
@@ -135,22 +135,27 @@ function VariantDetails({ variant }) {
                     </Col>
 
                     <Col md={4}>
-                        <h4 className="text-primary fw-bold mb-3">{variant.variantName}</h4>
+                        <h4 className="text-primary fw-bold mb-3">
+                            {variant.variantName
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                .join(' ')}
+                        </h4>
                         <div className="variant-details">
                             <p className="mb-2">
-                                <span className="text-secondary fw-semibold">Fuel Type:</span> 
+                                <span className="text-secondary fw-semibold">Fuel Type:</span>
                                 <span className="ms-2">{variant.fuelType}</span>
                             </p>
                             <p className="mb-2">
-                                <span className="text-secondary fw-semibold">Seats:</span> 
+                                <span className="text-secondary fw-semibold">Seats:</span>
                                 <span className="ms-2">{variant.seatCapacity}</span>
                             </p>
                             <p className="mb-2">
-                                <span className="text-secondary fw-semibold">AC:</span> 
+                                <span className="text-secondary fw-semibold">AC:</span>
                                 <span className="ms-2">{variant.isAc ? 'Yes' : 'No'}</span>
                             </p>
                             <p className="mb-2">
-                                <span className="text-secondary fw-semibold">Rent/Day:</span> 
+                                <span className="text-secondary fw-semibold">Rent/Day:</span>
                                 <span className="ms-2 text-success fw-bold">₹{variant.rentPerDay}</span>
                             </p>
                         </div>
@@ -166,7 +171,7 @@ function VariantDetails({ variant }) {
                             {showForm ? (
                                 <span><i className="bi bi-x-circle me-2"></i>Hide Form</span>
                             ) : (
-                                <span><i className="bi bi-plus-circle me-2"></i>Add Vehicle</span>
+                                <span><i className="bi bi-plus-circle me-2"></i>Vehicle Registraction</span>
                             )}
                         </Button>
 
@@ -174,7 +179,7 @@ function VariantDetails({ variant }) {
                             <Card className="bg-light text-dark p-3 border border-primary rounded-3 shadow-sm">
                                 <Card.Header className="bg-primary text-white py-2">
                                     <h5 className="text-center mb-0">
-                                        <i className="bi bi-car-front me-2"></i>Add New Vehicle
+                                        <i className="bi bi-car-front me-2"></i>Vehcile Registraction
                                     </h5>
                                 </Card.Header>
                                 <Card.Body>
@@ -212,16 +217,16 @@ function VariantDetails({ variant }) {
                                         </Form.Group>
 
                                         <div className="d-grid">
-                                            <Button 
-                                                type="submit" 
-                                                variant="primary" 
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
                                                 className="py-2 fw-bold"
                                                 disabled={loading}
                                             >
                                                 {loading ? (
                                                     <Spinner as="span" animation="border" size="sm" role="status" />
                                                 ) : (
-                                                    <span><i className="bi bi-save me-2"></i>Save Vehicle</span>
+                                                    <span><i className="bi bi-save me-2"></i>Save Registraction</span>
                                                 )}
                                             </Button>
                                         </div>
@@ -261,33 +266,37 @@ function VariantDetails({ variant }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {vehicles.map((vehicle, index) => (
-                                        <tr key={vehicle.vehicleId}>
-                                            <td className="text-center">{index + 1}</td>
-                                            <td className="fw-semibold">{vehicle.vehicleRegistrationNumber}</td>
-                                            <td className="text-center">
-                                                <Badge 
-                                                    bg={getStatusVariant(vehicle.status)} 
-                                                    className="px-3 py-2 rounded-pill text-white"
-                                                    style={{ fontSize: '0.85rem' }}
-                                                >
-                                                    {vehicle.status}
-                                                </Badge>
-                                            </td>
-                                            <td className="text-center">
-                                                <Button
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    className="px-3 py-1"
-                                                    onClick={() => handleDeleteClick(vehicle.vehicleId)}
-                                                    disabled={loading}
-                                                >
-                                                    <i className="bi bi-trash me-1"></i>Delete
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {vehicles
+                                        .slice() 
+                                        .sort((a, b) => b.vehicleId - a.vehicleId) 
+                                        .map((vehicle, index) => (
+                                            <tr key={vehicle.vehicleId}>
+                                                <td className="text-center">{index + 1}</td>
+                                                <td className="fw-semibold">{vehicle.vehicleRegistrationNumber}</td>
+                                                <td className="text-center">
+                                                    <Badge
+                                                        bg={getStatusVariant(vehicle.status)}
+                                                        className="px-3 py-2 rounded-pill text-white"
+                                                        style={{ fontSize: '0.85rem' }}
+                                                    >
+                                                        {vehicle.status}
+                                                    </Badge>
+                                                </td>
+                                                <td className="text-center">
+                                                    <Button
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        className="px-3 py-1"
+                                                        onClick={() => handleDeleteClick(vehicle.vehicleId)}
+                                                        disabled={loading}
+                                                    >
+                                                        <i className="bi bi-trash me-1"></i>Delete
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
+
                             </Table>
                         </div>
                     )}

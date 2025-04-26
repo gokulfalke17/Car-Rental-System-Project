@@ -150,13 +150,7 @@ const Home = () => {
                       <strong>Seats:</strong> {car.seatCapacity || "N/A"}
                     </p>
                     <p className="fw-bold text-success">₹{car.rentPerDay || "0"} / day</p>
-                    <Button 
-                      variant="primary" 
-                      className="mt-auto"
-                      onClick={() => handleBookClick(car.variantId, car.imageUrl)}
-                    >
-                      Book Now
-                    </Button>
+                   
                   </div>
                 </div>
               </div>

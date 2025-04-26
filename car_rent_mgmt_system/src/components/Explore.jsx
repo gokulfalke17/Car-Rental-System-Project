@@ -7,7 +7,7 @@ const Explore = () => {
   const [vehicles, setVehicles] = useState([]);
   const [search, setSearch] = useState("");
   const [showVehicles, setShowVehicles] = useState({});
- 
+
   const navigate = useNavigate();
 
   const fetchVehicles = () => {
@@ -24,7 +24,7 @@ const Explore = () => {
 
     if (localStorage.getItem("vehicleBooked") === "true") {
       fetchVehicles();
-      localStorage.removeItem("vehicleBooked"); 
+      localStorage.removeItem("vehicleBooked");
     }
 
     const handleFocus = () => {
@@ -58,7 +58,7 @@ const Explore = () => {
     <div className="container py-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
       <div className="row justify-content-center mb-4">
         <div className="col-12 text-center">
-          <h2 className="display-5 fw-bold mb-3" style={{ 
+          <h2 className="display-5 fw-bold mb-3" style={{
             color: '#2c3e50',
             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
             background: 'linear-gradient(90deg, #3498db, #2ecc71)',
@@ -85,7 +85,7 @@ const Explore = () => {
                 fontSize: '1rem'
               }}
             />
-            <span 
+            <span
               className="input-group-text bg-white border-0 rounded-pill"
               style={{ marginLeft: '-40px', zIndex: 5 }}
             >
@@ -103,7 +103,7 @@ const Explore = () => {
             )
             .map((car, index) => (
               <div className="col-12 col-sm-6 col-lg-4 col-xl-3" key={index}>
-                <div 
+                <div
                   className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-all"
                   style={{
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -122,37 +122,40 @@ const Explore = () => {
                           : "https://via.placeholder.com/300"
                       }
                       className="card-img-top w-100 h-100"
-                      alt={car.variantName}
-                      style={{ 
+                      alt={car.variantName.charAt(0).toUpperCase() + car.variantName.slice(1)}
+                      style={{
                         objectFit: 'cover',
                         transition: 'transform 0.5s ease',
                         ':hover': {
                           transform: 'scale(1.05)'
                         }
                       }}
+
                     />
-                    <div 
+                    <div
                       className="position-absolute top-0 end-0 m-2 bg-white rounded-pill px-2 py-1 shadow-sm"
                       style={{ fontSize: '0.8rem' }}
                     >
                       <span className="badge bg-success">{car.fuelType}</span>
                     </div>
                   </div>
-                  
+
                   <div className="card-body d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <h5 className="card-title fw-bold mb-0" style={{ color: '#2c3e50' }}>
-                        {car.variantName}
+                        {car.variantName.charAt(0).toUpperCase() + car.variantName.slice(1)}
                       </h5>
+
                       <span className="text-muted" style={{ fontSize: '0.9rem' }}>
                         {car.year}
                       </span>
                     </div>
-                    
-                    <p className="text-primary mb-2" style={{ fontWeight: 500 }}>
-                      {car.company?.companyName}
-                    </p>
-                    
+
+                    <h6 className="text-primary mb-2" style={{ fontWeight: 500 }}>
+                      {car.company?.companyName.charAt(0).toUpperCase() + car.company?.companyName.slice(1)}
+                    </h6>
+
+
                     <div className="d-flex flex-wrap gap-2 mb-3">
                       <span className="d-flex align-items-center bg-light px-2 py-1 rounded" style={{ fontSize: '0.8rem' }}>
                         <i className="bi bi-people me-1 text-secondary"></i>
@@ -167,7 +170,7 @@ const Explore = () => {
                         {car.modelNumber}
                       </span>
                     </div>
-                    
+
                     <div className="mt-auto">
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <div>
@@ -202,15 +205,14 @@ const Explore = () => {
                                 <div
                                   key={v.vehicleId}
                                   className="d-flex justify-content-between align-items-center p-2 rounded"
-                                  style={{ 
+                                  style={{
                                     backgroundColor: '#f8f9fa',
-                                    borderLeft: `3px solid ${
-                                      v.status === "Available" 
-                                        ? '#2ecc71' 
-                                        : v.status === "Booked" 
-                                        ? '#f39c12' 
+                                    borderLeft: `3px solid ${v.status === "Available"
+                                      ? '#2ecc71'
+                                      : v.status === "Booked"
+                                        ? '#f39c12'
                                         : '#95a5a6'
-                                    }`
+                                      }`
                                   }}
                                 >
                                   <div className="d-flex align-items-center">
@@ -222,19 +224,19 @@ const Explore = () => {
                                   <div className="d-flex align-items-center gap-2">
                                     <span
                                       className="badge rounded-pill"
-                                      style={{ 
-                                        backgroundColor: 
-                                          v.status === "Available" 
-                                            ? '#d5f5e3' 
-                                            : v.status === "Booked" 
-                                            ? '#fdebd0' 
-                                            : '#ebedef',
-                                        color: 
-                                          v.status === "Available" 
-                                            ? '#27ae60' 
-                                            : v.status === "Booked" 
-                                            ? '#e67e22' 
-                                            : '#7f8c8d',
+                                      style={{
+                                        backgroundColor:
+                                          v.status === "Available"
+                                            ? '#d5f5e3'
+                                            : v.status === "Booked"
+                                              ? '#fdebd0'
+                                              : '#ebedef',
+                                        color:
+                                          v.status === "Available"
+                                            ? '#27ae60'
+                                            : v.status === "Booked"
+                                              ? '#e67e22'
+                                              : '#7f8c8d',
                                         fontSize: '0.75rem'
                                       }}
                                     >
@@ -276,7 +278,7 @@ const Explore = () => {
               <i className="bi bi-emoji-frown display-4 text-secondary mb-3"></i>
               <h5 className="fw-bold mb-2" style={{ color: '#2c3e50' }}>No vehicles available</h5>
               <p className="text-muted">Please check back later or try a different search</p>
-              <button 
+              <button
                 className="btn btn-primary mt-2 px-4 rounded-pill"
                 onClick={fetchVehicles}
               >

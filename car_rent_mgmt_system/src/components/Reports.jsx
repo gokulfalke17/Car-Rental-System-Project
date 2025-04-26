@@ -133,7 +133,9 @@ const Reports = () => {
                                                 {initials}
                                             </div>
                                             <div>
-                                                <h6 className="mb-0">{customer.firstName} {customer.lastName}</h6>
+                                                <h6 className="mb-0">
+                                                    {customer.firstName.charAt(0).toUpperCase() + customer.firstName.slice(1)} {customer.lastName.charAt(0).toUpperCase() + customer.lastName.slice(1)}
+                                                </h6>
                                                 <small className="text-muted">Generated: {new Date().toLocaleString()}</small>
                                             </div>
                                         </div>
@@ -142,7 +144,7 @@ const Reports = () => {
                                                 <i className="bi bi-car-front-fill me-1"></i>
                                                 Bookings: {customerBookings.length}
                                             </span>
-                                            <button 
+                                            <button
                                                 className="btn d-flex align-items-center"
                                                 onClick={() => downloadReport(customer.userId)}
                                                 style={{ whiteSpace: 'nowrap' }}
@@ -159,7 +161,7 @@ const Reports = () => {
                                             <p><strong>Phone:</strong> {customer.contact || 'N/A'}</p>
                                         </div>
                                         <div className="col-md-6">
-                                            <p><strong>City:</strong> {customer.city || 'N/A'}</p>
+                                            <p><strong>City:</strong> {customer.city.charAt(0).toUpperCase() + customer.city.slice(1) || 'N/A'}</p>
                                             <p><strong>PIN:</strong> {customer.pincode || 'N/A'}</p>
                                         </div>
                                     </div>
