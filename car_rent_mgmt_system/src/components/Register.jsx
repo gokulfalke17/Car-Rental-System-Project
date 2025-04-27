@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../API/api";
 import { useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -19,62 +19,95 @@ const Register = () => {
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [touched, setTouched] = useState({});
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: null });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
+  const validateField = (name, value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     const contactRegex = /^[0-9]{10}$/;
     const pincodeRegex = /^[0-9]{6}$/;
 
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    switch (name) {
+      case "firstName":
+      case "lastName":
+      case "state":
+      case "city":
+        return !value.trim() ? `${name.charAt(0).toUpperCase() + name.slice(1)} is required` : null;
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!emailRegex.test(value)) return "Please enter a valid email";
+        return null;
+      case "password":
+        if (!value) return "Password is required";
+        if (!passwordRegex.test(value)) return "Password must be at least 8 characters with at least one letter and one number";
+        return null;
+      case "contact":
+        if (!value) return "Contact number is required";
+        if (!contactRegex.test(value)) return "Please enter a valid 10-digit phone number";
+        return null;
+      case "pincode":
+        if (!value) return "Pincode is required";
+        if (!pincodeRegex.test(value)) return "Please enter a valid 6-digit pincode";
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
     
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+    // Validate field in real-time if it's been touched (blurred at least once)
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors({ ...errors, [name]: error });
     }
+  };
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (!passwordRegex.test(formData.password)) {
-      newErrors.password = "Password must be at least 8 characters with at least one letter and one number";
-    }
-
-    if (!formData.contact) {
-      newErrors.contact = "Contact number is required";
-    } else if (!contactRegex.test(formData.contact)) {
-      newErrors.contact = "Please enter a valid 10-digit phone number";
-    }
-
-    if (!formData.state.trim()) newErrors.state = "State is required";
-    if (!formData.city.trim()) newErrors.city = "City is required";
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched({ ...touched, [name]: true });
     
-    if (!formData.pincode) {
-      newErrors.pincode = "Pincode is required";
-    } else if (!pincodeRegex.test(formData.pincode)) {
-      newErrors.pincode = "Please enter a valid 6-digit pincode";
-    }
+    // Validate the field when it loses focus
+    const error = validateField(name, formData[name]);
+    setErrors({ ...errors, [name]: error });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((name) => {
+      const error = validateField(name, formData[name]);
+      if (error) {
+        newErrors[name] = error;
+        isValid = false;
+      }
+    });
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
+
+  useEffect(() => {
+    // Check if all fields are valid whenever formData changes
+    const allFieldsTouched = Object.keys(formData).every(key => touched[key]);
+    if (allFieldsTouched) {
+      validateForm();
+    }
+  }, [formData, touched]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Mark all fields as touched when submitting
+    const allTouched = {};
+    Object.keys(formData).forEach(key => { allTouched[key] = true; });
+    setTouched(allTouched);
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -95,14 +128,14 @@ const Register = () => {
   };
 
   const fieldConfig = [
-    { name: "firstName", icon: "person-fill", type: "text" },
-    { name: "lastName", icon: "person-fill", type: "text" },
-    { name: "email", icon: "envelope-fill", type: "email" },
-    { name: "password", icon: "shield-lock-fill", type: "password" },
-    { name: "contact", icon: "telephone-fill", type: "tel" },
-    { name: "state", icon: "geo-alt-fill", type: "text" },
-    { name: "city", icon: "building", type: "text" },
-    { name: "pincode", icon: "postcard", type: "text" }
+    { name: "firstName", label: "First Name", icon: "person-fill", type: "text" },
+    { name: "lastName", label: "Last Name", icon: "person-fill", type: "text" },
+    { name: "email", label: "Email", icon: "envelope-fill", type: "email" },
+    { name: "password", label: "Password", icon: "shield-lock-fill", type: "password" },
+    { name: "contact", label: "Contact Number", icon: "telephone-fill", type: "tel" },
+    { name: "state", label: "State", icon: "geo-alt-fill", type: "text" },
+    { name: "city", label: "City", icon: "building", type: "text" },
+    { name: "pincode", label: "Pincode", icon: "postcard", type: "text" }
   ];
 
   return (
@@ -133,12 +166,12 @@ const Register = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} noValidate>
                 <div className="row g-3">
                   {fieldConfig.map((field, index) => (
                     <div key={index} className="col-md-6">
                       <label htmlFor={field.name} className="form-label fw-medium">
-                        {field.name.charAt(0).toUpperCase() + field.name.slice(1).replace(/([A-Z])/g, " $1")}
+                        {field.label}
                       </label>
                       <div className="input-group">
                         <span className="input-group-text bg-light">
@@ -151,6 +184,7 @@ const Register = () => {
                           className={`form-control ${errors[field.name] ? "is-invalid" : ""}`}
                           value={formData[field.name]}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           required
                         />
                         {errors[field.name] && (
