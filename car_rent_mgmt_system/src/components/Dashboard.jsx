@@ -13,7 +13,6 @@ const Dashboard = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Color scheme
   const colors = {
     primary: "#4361ee",
     primaryLight: "#4895ef",
@@ -39,18 +38,15 @@ const Dashboard = () => {
     }
   };
 
-  // Responsive breakpoints
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 992;
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch dashboard data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,7 +54,6 @@ const Dashboard = () => {
         setError(null);
         const response = await axios.get("http://localhost:4041/api/dashboard/summary");
         
-        // Validate response data
         if (!response.data || 
             typeof response.data.totalCars !== 'number' || 
             typeof response.data.bookedCars !== 'number' ||
@@ -78,12 +73,10 @@ const Dashboard = () => {
 
     fetchData();
     
-    // Set up auto-refresh every 5 minutes
     const interval = setInterval(fetchData, 300000);
     return () => clearInterval(interval);
   }, []);
 
-  // Loading state
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" 
@@ -102,7 +95,6 @@ const Dashboard = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Container className="py-5 text-center" style={{ minHeight: "100vh" }}>
@@ -133,10 +125,8 @@ const Dashboard = () => {
     );
   }
 
-  // Main dashboard content
   return (
     <div style={{ background: colors.light, minHeight: "100vh" }}>
-      {/* Dashboard Header */}
       <div style={{ 
         background: colors.gradients.primary,
         padding: isMobile ? "1.5rem 0" : "2.5rem 0",
@@ -168,14 +158,11 @@ const Dashboard = () => {
         </Container>
       </div>
 
-      {/* Dashboard Content */}
       <Container>
-        {/* Summary Cards */}
         <Row className="g-4 mb-4">
           <SummaryCards data={data} colors={colors} isMobile={isMobile} />
         </Row>
 
-        {/* Charts Row 1 */}
         <Row className="g-4 mb-4">
           <Col lg={6}>
             <div className="card h-100 shadow-sm border-0" style={{ 
@@ -250,7 +237,6 @@ const Dashboard = () => {
           </Col>
         </Row>
 
-        {/* Bar Chart */}
         <Row className="mb-4">
           <Col xs={12}>
             <div className="card shadow-sm border-0" style={{ 
@@ -281,7 +267,6 @@ const Dashboard = () => {
           </Col>
         </Row>
 
-        {/* Additional Cards */}
         <Row className="g-4 mb-5">
           <Col md={6}>
             <div className="card h-100 shadow-sm border-0" style={{ 
@@ -338,7 +323,6 @@ const Dashboard = () => {
         </Row>
       </Container>
 
-      {/* Footer */}
       <footer className="py-3 text-center" style={{ 
         background: colors.dark,
         color: "white",

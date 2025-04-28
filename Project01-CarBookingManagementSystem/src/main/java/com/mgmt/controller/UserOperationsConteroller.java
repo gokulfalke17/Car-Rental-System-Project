@@ -141,14 +141,14 @@ public class UserOperationsConteroller {
     }
     
     
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable Integer userId) {
-        boolean isDeleted = userService.deleteCustomerById(userId);
-        if (isDeleted) {
-            return ResponseEntity.ok("Customer Deleted Successfully...");
-        } else {
-            return ResponseEntity.status(404).body("Customer Not Found.!");
-        }
-    }
-
+	  @DeleteMapping("/{userId}")
+	public ResponseEntity<String> deleteCustomer(@PathVariable Integer userId) {
+	    boolean isDeleted = userService.deleteCustomerById(userId);
+	    if (isDeleted) {
+	        return ResponseEntity.ok("Customer Deleted Successfully...");
+	    } else {
+	        return ResponseEntity.status(404).body("Customer Not Found.!");
+	    }
+	}
+	
 }

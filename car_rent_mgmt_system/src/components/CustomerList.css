@@ -1,0 +1,29 @@
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+}
+.icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.customer-details i {
+  font-size: 1.1rem;
+}
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+@media (max-width: 767px) {
+  .card-body p {
+    font-size: 0.875rem;
+  }
+  .card-footer button {
+    font-size: 0.875rem;
+  }
+}

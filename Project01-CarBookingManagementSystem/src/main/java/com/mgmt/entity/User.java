@@ -2,6 +2,7 @@ package com.mgmt.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,11 +25,13 @@ public class User {
 	private Integer userId;
 	private String firstName;
 	private String lastName;
-	private String email;
+	private String email;	
 	private String password;
 	private Long contact;
 	private String state;
 	private String city;
 	private Integer pincode;
+	
+	
 
 }

@@ -1,5 +1,7 @@
 package com.mgmt.controller;
 
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mgmt.entity.Booking;
 import com.mgmt.entity.Booking.BookingStatus;
+import com.mgmt.entity.User;
+import com.mgmt.entity.Vehicle;
+import com.mgmt.repository.IBookingRepository;
+import com.mgmt.repository.IUserRepository;
+import com.mgmt.repository.IVehicleRepository;
 import com.mgmt.service.IBookingService;
+
+import jakarta.mail.MessagingException;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -28,6 +37,17 @@ public class BookingOperationsController {
 
 	@Autowired
 	private IBookingService bookingService;
+	
+	 @Autowired
+	    private IBookingRepository bookingRepository;
+
+	    @Autowired
+	    private IUserRepository userRepository;
+
+	    @Autowired
+	    private IVehicleRepository vehicleRepository;
+
+	    
 
 	@PostMapping("/book")
 	public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
@@ -102,7 +122,7 @@ public class BookingOperationsController {
 	        @RequestBody Booking bookingRequest) {
 	    try {
 	        boolean updated = bookingService.updateBookingStatus(bookingId, bookingRequest.getStatus());
-
+	
 	        if (updated) {
 	            Optional<Booking> updatedBooking = bookingService.getBookingById(bookingId);
 	            return ResponseEntity.ok(updatedBooking);
@@ -114,6 +134,9 @@ public class BookingOperationsController {
 	    }
 	}
 
+
+	
+	
 	
 	
 	@GetMapping("/customer/{userId}")
