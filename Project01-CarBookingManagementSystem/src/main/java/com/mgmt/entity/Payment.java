@@ -2,32 +2,27 @@ package com.mgmt.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="payment")
+@Table(name = "payment")
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer paymentId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "booking_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE) 
     private Booking booking;
 
     private Double amount;
@@ -35,7 +30,7 @@ public class Payment {
     private String transactionId;
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status; 
+    private PaymentStatus status;
 
     public enum PaymentStatus {
         PENDING,
@@ -43,7 +38,6 @@ public class Payment {
         FAILED,
         REFUNDED
     }
-    
+
     private LocalDateTime paymentDate;
-    
 }
