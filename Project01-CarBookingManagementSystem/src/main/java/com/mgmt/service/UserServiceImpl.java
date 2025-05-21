@@ -104,4 +104,27 @@ public class UserServiceImpl implements IUserService {
 		}
 		return false;
 	}
+
+	@Override
+	public User updateUser(Integer userId, User user) {
+		User uId = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("user Not Found..."));
+		if(uId!=null) {
+			uId.setFirstName(user.getFirstName());
+	        uId.setLastName(user.getLastName());
+	        uId.setEmail(user.getEmail());
+
+	        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+	            String encodedPassword = passwordEncoder.encode(user.getPassword());
+	            uId.setPassword(encodedPassword);
+	        }
+	        
+	        uId.setContact(user.getContact());
+	        uId.setState(user.getState());
+	        uId.setCity(user.getCity());
+	        uId.setPincode(user.getPincode());
+			
+	       return userRepository.save(uId);
+		}
+		return null;
+	}
 }

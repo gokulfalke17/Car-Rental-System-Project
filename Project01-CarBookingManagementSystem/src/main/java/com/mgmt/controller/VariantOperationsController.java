@@ -2,9 +2,12 @@ package com.mgmt.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -52,34 +55,75 @@ public class VariantOperationsController {
 		return ResponseEntity.ok(savedVariant);
 	}*/
 	
-	@PostMapping("/save")
+	/*@PostMapping("/save")
 	public ResponseEntity<?> addVariant(
 	    @RequestPart("variant") String variantJson,
 	    @RequestPart("image") MultipartFile file) throws IOException {
 	    
 	    ObjectMapper objectMapper = new ObjectMapper();
 	    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+	
 	    Variant variant = objectMapper.readValue(variantJson, Variant.class);
-
+	
 	    String fileName = file.getOriginalFilename();
 	    file.transferTo(new File("YOUR_FILE_PATH_HERE" + fileName));
 	    variant.setImageUrl(fileName);
-
+	
 	    Variant savedVariant = variantService.addVariant(variant);
 	    return ResponseEntity.ok(savedVariant);
+	}*/
+	
+	@PostMapping("/save")
+	public ResponseEntity<?> addVariant(
+	    @RequestPart("variant") String variantJson,
+	    @RequestPart("image") MultipartFile file) {
+
+	    try {
+	        ObjectMapper objectMapper = new ObjectMapper();
+	        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	        Variant variant = objectMapper.readValue(variantJson, Variant.class);
+
+
+	        String relativeUploadPath = "uploads/imgs";
+	        Path uploadPath = Paths.get(relativeUploadPath).toAbsolutePath();
+	        File dir = uploadPath.toFile();
+	        if (!dir.exists() && !dir.mkdirs()) {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                    .body("Failed to create upload directory: " + uploadPath);
+	        }
+
+
+	        String originalFileName = file.getOriginalFilename();
+	        String savedFileName = System.currentTimeMillis() + "_" + originalFileName; // Rename to avoid collision
+	        Path savedFilePath = uploadPath.resolve(savedFileName);
+	        file.transferTo(savedFilePath);
+
+
+	        variant.setImageUrl(savedFileName);  
+
+	        Variant savedVariant = variantService.addVariant(variant);
+	        return ResponseEntity.ok(savedVariant);
+
+	    } catch (IOException e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("Error processing file upload: " + e.getMessage());
+	    }
 	}
+
+
+
 
 
 	// adding backend pagination
-	@GetMapping("/all")
-	public ResponseEntity<Page<Variant>> getAllVariants(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "3") int size) {
-
-		PageRequest pageable = PageRequest.of(page, size);
-		Page<Variant> pagedVariants = variantService.getAllVariants(pageable);
-		return ResponseEntity.ok(pagedVariants);
-	}
+		@GetMapping("/all")
+		public ResponseEntity<Page<Variant>> getAllVariants(@RequestParam(defaultValue = "0") int page,
+				@RequestParam(defaultValue = "3") int size) {
+	
+			PageRequest pageable = PageRequest.of(page, size);
+			Page<Variant> pagedVariants = variantService.getAllVariants(pageable);
+			System.err.println(pagedVariants);
+			return ResponseEntity.ok(pagedVariants);
+		}
 
 	// http://localhost:4041/api/variant/{id}
 	@GetMapping("/{id}")
@@ -88,14 +132,14 @@ public class VariantOperationsController {
 		return variant != null ? ResponseEntity.ok(variant) : ResponseEntity.notFound().build();
 	}
 
-	// http://localhost:4041/api/variant/update/{id}
+	/*// http://localhost:4041/api/variant/update/{id}
 	@PostMapping("/update/{id}")
 	public ResponseEntity<String> updateVariant(@PathVariable Integer id, @RequestPart("variant") String variantJson,
 			@RequestPart(name = "imageUrl", required = false) MultipartFile file) throws IOException {
-
+	
 		ObjectMapper objectMapper = new ObjectMapper();
 		Variant updatedData = objectMapper.readValue(variantJson, Variant.class);
-
+	
 		if (file != null && !file.isEmpty()) {
 			String fileName = file.getOriginalFilename();
 			file.transferTo(new File(
@@ -103,10 +147,42 @@ public class VariantOperationsController {
 							+ fileName));
 			updatedData.setImageUrl(fileName);
 		}
-
+	
 		variantService.updateVariant(id, updatedData);
 		return ResponseEntity.ok("Varient Updated Successfully...");
+	}*/
+	
+	
+	@PostMapping("/update/{id}")
+	public ResponseEntity<String> updateVariant(@PathVariable Integer id,
+	                                            @RequestPart("variant") String variantJson,
+	                                            @RequestPart(name = "imageUrl", required = false) MultipartFile file) throws IOException {
+
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    Variant updatedData = objectMapper.readValue(variantJson, Variant.class);
+
+	    if (file != null && !file.isEmpty()) {
+	        String fileName = file.getOriginalFilename();
+	        
+	        String uploadDir = "D:/Workspaces/Company_Tasks(Projects)/Car_Rent_System/Project01-CarBookingManagementSystem/uploads/imgs";
+
+
+	        File directory = new File(uploadDir);
+	        if (!directory.exists()) {
+	            directory.mkdirs(); 
+	        }
+
+	        File destFile = new File(uploadDir + File.separator + fileName);
+	        file.transferTo(destFile);
+
+	        updatedData.setImageUrl("/uploads/imgs/" + fileName);
+	    }
+
+	    variantService.updateVariant(id, updatedData);
+
+	    return ResponseEntity.ok("Variant Updated Successfully...");
 	}
+
 
 	// http://localhost:4041/api/variant/delete/{id}
 	@DeleteMapping("/delete/{id}")

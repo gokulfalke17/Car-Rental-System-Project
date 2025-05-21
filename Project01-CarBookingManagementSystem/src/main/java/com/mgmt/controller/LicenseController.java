@@ -85,6 +85,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -122,7 +123,7 @@ public class LicenseController {
 				return ResponseEntity.badRequest().body("User not found with ID: " + userId);
 			}
 
-			String uploadDir = "uploads/";
+			String uploadDir = "uploads/imgs/";
 			Path uploadPath = Paths.get(uploadDir);
 			if (!Files.exists(uploadPath)) {
 				Files.createDirectories(uploadPath);
@@ -153,4 +154,43 @@ public class LicenseController {
 		Optional<Optional<License>> licenseOpt = licenseService.getLicenseByUserId(userId);
 		return licenseOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
 	}
+	
+	
+	@PutMapping("/update/{licenseId}")
+	public ResponseEntity<?> updateLicense(
+	        @PathVariable Integer licenseId,
+	        @RequestParam("licenseNumber") String licenseNumber,
+	        @RequestParam("expiryDate") String expiryDate,
+	        @RequestParam(value = "licensePhoto", required = false) MultipartFile licensePhoto
+	) {
+	    try {
+	        Optional<License> licenseOptional = licenseService.getLicenseById(licenseId);
+	        if (licenseOptional.isEmpty()) {
+	            return ResponseEntity.badRequest().body("License not found");
+	        }
+
+	        License license = licenseOptional.get();
+	        license.setLicenseNumber(licenseNumber);
+	        license.setExpiryDate(expiryDate);
+
+	        if (licensePhoto != null && !licensePhoto.isEmpty()) {
+	            String uploadDir = "uploads/imgs/";
+	            Path uploadPath = Paths.get(uploadDir);
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
+
+	            String fileName = licensePhoto.getOriginalFilename();
+	            Path filePath = uploadPath.resolve(fileName);
+	            Files.copy(licensePhoto.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+	            license.setLicensePhoto(fileName);
+	        }
+
+	        License updatedLicense = licenseService.updateLicense(license);
+	        return ResponseEntity.ok(updatedLicense);
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().body("Failed to update license");
+	    }
+	}
+	
 }

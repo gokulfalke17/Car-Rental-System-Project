@@ -363,7 +363,7 @@ const Bookings = () => {
                                   <div className="d-flex gap-2">
                                     <button
                                       className="btn btn-sm btn-danger"
-                                      onClick={() => handleStatusUpdate(booking.bookingId, 'CANCELED')}
+                                      onClick={() => handleStatusUpdate(booking.bookingId, 'CANCELLED')}
                                     >
                                       Yes
                                     </button>

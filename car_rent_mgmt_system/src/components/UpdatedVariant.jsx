@@ -4,8 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 const UpdateVariant = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); 
-
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     id: "",
@@ -18,6 +17,7 @@ const UpdateVariant = () => {
     isAc: false,
     seatCapacity: "",
     rentPerDay: "",
+    imageUrl: "", 
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -29,18 +29,19 @@ const UpdateVariant = () => {
         setFormData({
           ...res.data,
           id: res.data.id || id,
+          imageUrl: res.data.imageUrl || "",
         });
       })
       .catch((err) => {
         console.error("Error Fetching Variant Data", err);
-        setMessage("❌ Failed to Vetch Variant Data.");
+        setMessage("Failed to fetch variant data.");
       });
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (name === "isAc") {
-      setFormData({ ...formData, [name]: checked });
+      setFormData({ ...formData, isAc: checked });
     } else if (name === "companyId") {
       setFormData({ ...formData, company: { id: value } });
     } else {
@@ -64,13 +65,11 @@ const UpdateVariant = () => {
           "Content-Type": "multipart/form-data"
         }
       });
-      setMessage("✅ Variant updated successfully!");
-      setTimeout(() => {
-        navigate("/variantList"); 
-      }, 1500);
+      setMessage("Variant updated successfully!");
+      setTimeout(() => navigate("/variantList"), 1500);
     } catch (err) {
       console.error("Update Error:", err.response?.data || err.message);
-      setMessage("❌ Failed to update variant.");
+      setMessage("Failed to update variant.");
     }
   };
 
@@ -116,10 +115,12 @@ const UpdateVariant = () => {
             <label className="form-label">Rent Per Day</label>
             <input type="number" className="form-control" name="rentPerDay" value={formData.rentPerDay} onChange={handleChange} required />
           </div>
+
           <div className="col-md-6">
             <label className="form-label">Update Image (optional)</label>
             <input type="file" className="form-control" onChange={(e) => setImageFile(e.target.files[0])} />
           </div>
+
           <div className="col-12 text-center mt-3">
             <button type="submit" className="btn btn-warning px-4">Update Variant</button>
           </div>

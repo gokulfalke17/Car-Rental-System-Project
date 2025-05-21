@@ -29,6 +29,8 @@ import FeedbackReport from "./components/FeedbackReport";
 import Reports from "./components/Reports";
 import Dashboard from "./components/Dashboard";
 import CashOnDelivery from "./components/CashOnDelivery";
+import CarHistory from "./components/CarHistory";
+import UpdateUserProfile from "./components/UpdateUserProfile";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const location = useLocation();
@@ -118,7 +120,7 @@ const App = () => {
           </ProtectedRoute>
         } />
 
-        {/* Customer only routes */}
+
         <Route path="/profile" element={
           <ProtectedRoute allowedRoles={["customer"]}>
             <CustomerProfile />
@@ -192,6 +194,23 @@ const App = () => {
           </ProtectedRoute>
         } />
 
+
+
+        <Route path="/admin/car-history" element={
+          <ProtectedRoute>
+            <CarHistory />
+          </ProtectedRoute>
+        } />
+
+
+        <Route path="/users/update/:userId" element={
+          <ProtectedRoute>
+            <UpdateUserProfile />
+          </ProtectedRoute>
+        } />
+
+       
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

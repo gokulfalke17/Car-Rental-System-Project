@@ -150,7 +150,7 @@ const CustomerProfile = () => {
                       <div className="position-relative d-inline-block">
                         <img
                           src={!profileImageError && user.profileImage
-                            ? `http://localhost:4041/imgs/${user.profileImage}`
+                            ? `http://localhost:4041/uploads/${user.profileImage}`
                             : "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg"}
                           alt="Profile"
                           className="rounded-circle shadow"
@@ -174,10 +174,24 @@ const CustomerProfile = () => {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                         border: '1px solid rgba(0,0,0,0.05)'
                       }}>
+
+                        <div className="text-end">
+                          <button
+                            className="btn btn-outline-secondary btn-lg"
+                            onClick={() => navigate(`/users/update/${user.userId}`, { state: { user } })}
+                          >
+                            <i className="bi bi-pencil-fill me-1"></i>
+                            Update Profile
+                          </button>
+                        </div>
+
                         <h5 className="mb-4 pb-2 text-primary border-bottom d-flex align-items-center">
                           <i className="bi bi-person-lines-fill me-2"></i>
                           Personal Information
                         </h5>
+
+
+
                         <div className="row">
                           <div className="col-md-6 mb-3">
                             <div className="d-flex align-items-center mb-2">
@@ -250,6 +264,9 @@ const CustomerProfile = () => {
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                                 border: '1px solid rgba(0,0,0,0.05)'
                               }}>
+
+
+
                                 <h2 className="text-center mb-4 pb-3 text-primary border-bottom d-flex align-items-center justify-content-center">
                                   <i className="bi bi-card-checklist me-3"></i>
                                   Driving License Details
@@ -278,7 +295,7 @@ const CustomerProfile = () => {
                                   <div className="d-flex justify-content-center">
                                     <img
                                       src={!licenseImageError
-                                        ? `http://localhost:4041/imgs/${license.licensePhoto}`
+                                        ? `http://localhost:4041/uploads/imgs/${license.licensePhoto}`
                                         : "https://via.placeholder.com/300x200?text=License+Image+Not+Found"}
                                       alt="License"
                                       className="img-fluid border rounded shadow"
@@ -287,16 +304,21 @@ const CustomerProfile = () => {
                                         maxWidth: '100%'
                                       }}
                                       onError={() => handleImageError('license')}
+                                      onLoad={() => console.log(`License image loaded: http://localhost:4041/uploads/imgs/${license.licensePhoto}`)}
                                     />
                                   </div>
                                 </div>
+
                               </div>
                             </div>
                           </div>
                         )}
                       </>
                     )}
+
                   </div>
+
+
                 </>
               )}
             </div>

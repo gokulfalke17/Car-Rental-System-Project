@@ -110,11 +110,7 @@ const Reports = () => {
 
             {activeTab === 'customers' && (
                 <>
-                    <div className="mb-4">
-                        <button onClick={() => downloadReport()} className="btn btn-outline-secondary text-warning">
-                            <i className="bi bi-download me-2"></i>Download All Customer Reports
-                        </button>
-                    </div>
+                    
 
                     {users.map((customer) => {
                         const customerBookings = getCustomerBookings(customer.userId);

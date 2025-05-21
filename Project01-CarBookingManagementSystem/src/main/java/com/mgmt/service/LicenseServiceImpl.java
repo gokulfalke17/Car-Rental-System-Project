@@ -38,4 +38,15 @@ public class LicenseServiceImpl implements ILicenseService {
     public Optional<Optional<License>> getLicenseByUserId(Integer userId) {
         return Optional.ofNullable(licenseRepository.findByUserUserId(userId));
     }
+    
+
+    @Override
+    public License updateLicense(License license) {
+        return licenseRepository.save(license);
+    }
+    
+    @Override
+    public Optional<License> getLicenseById(Integer licenseId) {
+        return licenseRepository.findById(licenseId);
+    }
 }

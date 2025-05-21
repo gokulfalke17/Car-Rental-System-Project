@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Image, Form, Button, Table, Badge, Modal, Alert, Spinner } from 'react-bootstrap';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function VariantDetails({ variant }) {
     const [vehicleNumber, setVehicleNumber] = useState('');
@@ -20,9 +21,9 @@ function VariantDetails({ variant }) {
         const fetchVehicles = async () => {
             try {
                 setLoading(true);
+                setError(null);
                 const res = await axios.get(`http://localhost:4041/api/variant/${variant.variantId}/vehicles`);
                 setVehicles(res.data);
-                setError(null);
             } catch (err) {
                 console.error('Error fetching vehicles:', err);
                 setError('Failed to fetch vehicles. Please try again.');
@@ -41,7 +42,7 @@ function VariantDetails({ variant }) {
 
         if (!vehicleNumber.trim()) {
             errors.vehicleNumber = 'Registration number is required';
-        } else if (!/^[A-Za-z0-9 -]+$/.test(vehicleNumber)) {
+        } else if (!/^[A-Za-z0-9\s-]+$/.test(vehicleNumber)) {
             errors.vehicleNumber = 'Invalid registration number format';
         }
 
@@ -112,196 +113,281 @@ function VariantDetails({ variant }) {
         }
     };
 
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeInOut" } },
+        exit: { opacity: 0, y: -20, transition: { duration: 0.2 } }
+    };
+
+    const formVariants = {
+        open: { opacity: 1, height: 'auto', transition: { duration: 0.3 } },
+        closed: { opacity: 0, height: 0, transition: { duration: 0.2 } }
+    };
+
     return (
         <div className="container-fluid py-2 px-0 px-md-3">
-            {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-            {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>{success}</Alert>}
-
-            <Card className="p-3 bg-white text-dark shadow-sm border-0 rounded-3 mb-3">
-                <Row className="align-items-center">
-                    <Col xs={12} md={4} className="text-center mb-3 mb-md-0">
-                        <Image
-                            src={`http://localhost:4041/imgs/${variant.imageUrl}`}
-                            alt={variant.variantName}
-                            fluid
-                            rounded
-                            className="shadow"
-                            style={{
-                                maxHeight: '200px',
-                                objectFit: 'cover',
-                                border: '3px solid #e9ecef'
-                            }}
-                        />
-                    </Col>
-
-                    <Col xs={12} md={4} className="mb-3 mb-md-0">
-                        <h4 className="text-primary fw-bold mb-2 text-center text-md-start">
-                            {variant.variantName
-                                .split(' ')
-                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                .join(' ')}
-                        </h4>
-                        <div className="variant-details">
-                            <p className="mb-1">
-                                <span className="text-secondary fw-semibold">Fuel:</span>
-                                <span className="ms-2">{variant.fuelType}</span>
-                            </p>
-                            <p className="mb-1">
-                                <span className="text-secondary fw-semibold">Seats:</span>
-                                <span className="ms-2">{variant.seatCapacity}</span>
-                            </p>
-                            <p className="mb-1">
-                                <span className="text-secondary fw-semibold">AC:</span>
-                                <span className="ms-2">{variant.isAc ? 'Yes' : 'No'}</span>
-                            </p>
-                            <p className="mb-1">
-                                <span className="text-secondary fw-semibold">Rent/Day:</span>
-                                <span className="ms-2 text-success fw-bold">₹{variant.rentPerDay}</span>
-                            </p>
-                        </div>
-                    </Col>
-
-                    <Col xs={12} md={4}>
-                        <Button
-                            className="mb-3 w-100 py-2 fw-bold"
-                            variant={showForm ? 'outline-secondary' : 'outline-primary'}
-                            onClick={() => setShowForm(!showForm)}
-                            disabled={loading}
-                        >
-                            {showForm ? (
-                                <span><i className="bi bi-x-circle me-2"></i>Hide Form</span>
-                            ) : (
-                                <span><i className="bi bi-plus-circle me-2"></i>Add Vehicle</span>
-                            )}
-                        </Button>
-
-                        {showForm && (
-                            <Card className="bg-light text-dark p-2 border border-primary rounded-3 shadow-sm">
-                                <Card.Header className="bg-primary text-white py-2">
-                                    <h5 className="text-center mb-0">
-                                        <i className="bi bi-car-front me-2"></i>Vehicle Registration
-                                    </h5>
-                                </Card.Header>
-                                <Card.Body>
-                                    <Form onSubmit={handleAddVehicle}>
-                                        <Form.Group controlId="vehicleNumber" className="mb-3">
-                                            <Form.Label className="fw-semibold">
-                                                <i className="bi bi-card-text me-2"></i>Registration No.
-                                            </Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="e.g. MH12AB1234"
-                                                value={vehicleNumber}
-                                                onChange={(e) => setVehicleNumber(e.target.value)}
-                                                isInvalid={!!validationErrors.vehicleNumber}
-                                                className="py-2"
-                                            />
-                                            <Form.Control.Feedback type="invalid">
-                                                {validationErrors.vehicleNumber}
-                                            </Form.Control.Feedback>
-                                        </Form.Group>
-
-                                        <Form.Group controlId="vehicleStatus" className="mb-3">
-                                            <Form.Label className="fw-semibold">
-                                                <i className="bi bi-info-circle me-2"></i>Status
-                                            </Form.Label>
-                                            <Form.Select
-                                                value={vehicleStatus}
-                                                onChange={(e) => setVehicleStatus(e.target.value)}
-                                                className="py-2"
-                                            >
-                                                <option value="Available">Available</option>
-                                                <option value="Booked">Booked</option>
-                                                <option value="Under Maintenance">Under Maintenance</option>
-                                            </Form.Select>
-                                        </Form.Group>
-
-                                        <div className="d-grid">
-                                            <Button
-                                                type="submit"
-                                                variant="primary"
-                                                className="py-2 fw-bold"
-                                                disabled={loading}
-                                            >
-                                                {loading ? (
-                                                    <Spinner as="span" animation="border" size="sm" role="status" />
-                                                ) : (
-                                                    <span><i className="bi bi-save me-2"></i>Save Vehicle</span>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </Form>
-                                </Card.Body>
-                            </Card>
-                        )}
-                    </Col>
-                </Row>
-            </Card>
-
-            <Card className="bg-white text-dark p-2 shadow-sm border-0 rounded-3">
-                <Card.Header className="bg-primary text-white py-2">
-                    <h5 className="text-center mb-0">
-                        <i className="bi bi-list-check me-2"></i>Registered Vehicles
-                    </h5>
-                </Card.Header>
-                <Card.Body className="p-1 p-sm-3">
-                    {loading && vehicles.length === 0 ? (
-                        <div className="text-center py-4">
-                            <Spinner animation="border" variant="primary" />
-                            <p className="mt-2 text-muted">Loading vehicles...</p>
-                        </div>
-                    ) : vehicles.length === 0 ? (
-                        <Alert variant="info" className="text-center m-2">
-                            No vehicles registered for this variant yet.
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                    >
+                        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+                            {error}
                         </Alert>
-                    ) : (
-                        <div className="table-responsive">
-                            <Table striped bordered hover className="mb-0">
-                                <thead className="table-primary">
-                                    <tr>
-                                        <th className="text-center">#</th>
-                                        <th>Registration No.</th>
-                                        <th className="text-center">Status</th>
-                                        <th className="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {vehicles
-                                        .slice() 
-                                        .sort((a, b) => b.vehicleId - a.vehicleId) 
-                                        .map((vehicle, index) => (
-                                            <tr key={vehicle.vehicleId}>
-                                                <td className="text-center">{index + 1}</td>
-                                                <td className="fw-semibold">{vehicle.vehicleRegistrationNumber}</td>
-                                                <td className="text-center">
-                                                    <Badge
-                                                        bg={getStatusVariant(vehicle.status)}
-                                                        className="px-2 py-1 rounded-pill text-white"
-                                                        style={{ fontSize: '0.85rem' }}
-                                                    >
-                                                        {vehicle.status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="text-center">
-                                                    <Button
-                                                        variant="outline-danger"
-                                                        size="sm"
-                                                        className="px-2 py-1"
-                                                        onClick={() => handleDeleteClick(vehicle.vehicleId)}
-                                                        disabled={loading}
-                                                    >
-                                                        <i className="bi bi-trash me-1"></i>
-                                                        <span className="d-none d-sm-inline">Delete</span>
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </Table>
-                        </div>
-                    )}
-                </Card.Body>
-            </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {success && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                    >
+                        <Alert variant="success" onClose={() => setSuccess(null)} dismissible>
+                            {success}
+                        </Alert>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <motion.div
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-white text-dark shadow-sm border-0 rounded-3 mb-3"
+            >
+                <Card className="p-3">
+                    <Row className="align-items-center">
+                        <Col xs={12} md={4} className="text-center mb-3 mb-md-0">
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: '100%',
+                                }}
+                            >
+                                <Image
+                                    src={(() => {
+                                        if (!variant.imageUrl) return ''; 
+                                        
+
+                                        let cleanedPath = variant.imageUrl.replace(/\/uploads\/imgs\/.*\/uploads\/imgs\//, "/uploads/imgs/");
+
+                                        if (!cleanedPath.startsWith("http")) {
+                                            cleanedPath = `http://localhost:4041${cleanedPath.startsWith("/") ? "" : "/"}${cleanedPath}`;
+                                        }
+
+                                        console.log("Cleaned Image URL:", cleanedPath); 
+
+                                        return cleanedPath;
+                                    })()}
+                                    alt={variant.variantName}
+                                    fluid
+                                    rounded
+                                    className="shadow"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '200px',
+                                        objectFit: 'cover',
+                                        border: '3px solid #e9ecef',
+                                    }}
+                                />
+
+                            </div>
+                        </Col>
+
+                        <Col xs={12} md={4} className="mb-3 mb-md-0">
+                            <h4 className="text-primary fw-bold mb-2 text-center text-md-start">
+                                {variant.variantName
+                                    .split(' ')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                    .join(' ')}
+                            </h4>
+                            <div className="variant-details">
+                                <p className="mb-1">
+                                    <span className="text-secondary fw-semibold">Fuel:</span>
+                                    <span className="ms-2">{variant.fuelType}</span>
+                                </p>
+                                <p className="mb-1">
+                                    <span className="text-secondary fw-semibold">Seats:</span>
+                                    <span className="ms-2">{variant.seatCapacity}</span>
+                                </p>
+                                <p className="mb-1">
+                                    <span className="text-secondary fw-semibold">AC:</span>
+                                    <span className="ms-2">{variant.isAc ? 'Yes' : 'No'}</span>
+                                </p>
+                                <p className="mb-1">
+                                    <span className="text-secondary fw-semibold">Rent/Day:</span>
+                                    <span className="ms-2 text-success fw-bold">₹{variant.rentPerDay}</span>
+                                </p>
+                            </div>
+                        </Col>
+
+                        <Col xs={12} md={4}>
+                            <Button
+                                className="mb-3 w-100 py-2 fw-bold"
+                                variant={showForm ? 'outline-secondary' : 'outline-primary'}
+                                onClick={() => setShowForm(!showForm)}
+                                disabled={loading}
+                            >
+                                {showForm ? (
+                                    <span><i className="bi bi-x-circle me-2"></i>Hide Form</span>
+                                ) : (
+                                    <span><i className="bi bi-plus-circle me-2"></i>Add Vehicle</span>
+                                )}
+                            </Button>
+
+                            <AnimatePresence>
+                                {showForm && (
+                                    <motion.div
+                                        variants={formVariants}
+                                        initial="closed"
+                                        animate="open"
+                                        exit="closed"
+                                    >
+                                        <Card className="bg-light text-dark p-2 border border-primary rounded-3 shadow-sm">
+                                            <Card.Header className="bg-primary text-white py-2">
+                                                <h5 className="text-center mb-0">
+                                                    <i className="bi bi-car-front me-2"></i>Vehicle Registration
+                                                </h5>
+                                            </Card.Header>
+                                            <Card.Body>
+                                                <Form onSubmit={handleAddVehicle}>
+                                                    <Form.Group controlId="vehicleNumber" className="mb-3">
+                                                        <Form.Label className="fw-semibold">
+                                                            <i className="bi bi-card-text me-2"></i>Registration No.
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            type="text"
+                                                            placeholder="e.g. MH12AB1234"
+                                                            value={vehicleNumber}
+                                                            onChange={(e) => setVehicleNumber(e.target.value)}
+                                                            isInvalid={!!validationErrors.vehicleNumber}
+                                                            className="py-2"
+                                                        />
+                                                        <Form.Control.Feedback type="invalid">
+                                                            {validationErrors.vehicleNumber}
+                                                        </Form.Control.Feedback>
+                                                    </Form.Group>
+
+                                                    <Form.Group controlId="vehicleStatus" className="mb-3">
+                                                        <Form.Label className="fw-semibold">
+                                                            <i className="bi bi-info-circle me-2"></i>Status
+                                                        </Form.Label>
+                                                        <Form.Select
+                                                            value={vehicleStatus}
+                                                            onChange={(e) => setVehicleStatus(e.target.value)}
+                                                            className="py-2"
+                                                        >
+                                                            <option value="Available">Available</option>
+                                                            <option value="Booked">Booked</option>
+                                                            <option value="Under Maintenance">Under Maintenance</option>
+                                                        </Form.Select>
+                                                    </Form.Group>
+
+                                                    <div className="d-grid">
+                                                        <Button
+                                                            type="submit"
+                                                            variant="primary"
+                                                            className="py-2 fw-bold"
+                                                            disabled={loading}
+                                                        >
+                                                            {loading ? (
+                                                                <Spinner as="span" animation="border" size="sm" role="status" />
+                                                            ) : (
+                                                                <span><i className="bi bi-save me-2"></i>Save Vehicle</span>
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </Form>
+                                            </Card.Body>
+                                        </Card>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </Col>
+                    </Row>
+                </Card>
+            </motion.div>
+
+            <motion.div
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-white text-dark shadow-sm border-0 rounded-3"
+            >
+                <Card className="p-2">
+                    <Card.Header className="bg-primary text-white py-2">
+                        <h5 className="text-center mb-0">
+                            <i className="bi bi-list-check me-2"></i>Registered Vehicles
+                        </h5>
+                    </Card.Header>
+                    <Card.Body className="p-1 p-sm-3">
+                        {loading && vehicles.length === 0 ? (
+                            <div className="text-center py-4">
+                                <Spinner animation="border" variant="primary" />
+                                <p className="mt-2 text-muted">Loading vehicles...</p>
+                            </div>
+                        ) : vehicles.length === 0 ? (
+                            <Alert variant="info" className="text-center m-2">
+                                No vehicles registered for this variant yet.
+                            </Alert>
+                        ) : (
+                            <div className="table-responsive">
+                                <Table striped bordered hover className="mb-0">
+                                    <thead className="table-primary">
+                                        <tr>
+                                            <th className="text-center">#</th>
+                                            <th>Registration No.</th>
+                                            <th className="text-center">Status</th>
+                                            <th className="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {vehicles
+                                            .slice()
+                                            .sort((a, b) => b.vehicleId - a.vehicleId)
+                                            .map((vehicle, index) => (
+                                                <tr key={vehicle.vehicleId}>
+                                                    <td className="text-center">{index + 1}</td>
+                                                    <td className="fw-semibold">{vehicle.vehicleRegistrationNumber}</td>
+                                                    <td className="text-center">
+                                                        <Badge
+                                                            bg={getStatusVariant(vehicle.status)}
+                                                            className="px-2 py-1 rounded-pill text-white"
+                                                            style={{ fontSize: '0.85rem' }}
+                                                        >
+                                                            {vehicle.status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <Button
+                                                            variant="outline-danger"
+                                                            size="sm"
+                                                            className="px-2 py-1"
+                                                            onClick={() => handleDeleteClick(vehicle.vehicleId)}
+                                                            disabled={loading}
+                                                        >
+                                                            <i className="bi bi-trash me-1"></i>
+                                                            <span className="d-none d-sm-inline">Delete</span>
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        )}
+                    </Card.Body>
+                </Card>
+            </motion.div>
 
             <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
                 <Modal.Header closeButton className="bg-danger text-white">

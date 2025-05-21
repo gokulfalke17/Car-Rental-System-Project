@@ -10,4 +10,8 @@ public interface ILicenseService {
     boolean existsByUserId(Integer userId);
     public Optional<Optional<License>> getLicenseByUserId(Integer userId);
     //public Optional<Optional<License>> getLicenseByUserId(Integer userId);
+    
+    public Optional<License> getLicenseById(Integer licenseId);
+	public License updateLicense(License license);
+	
 }

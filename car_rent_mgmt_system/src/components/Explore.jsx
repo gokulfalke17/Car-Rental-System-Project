@@ -77,7 +77,7 @@ const Explore = () => {
             <input
               type="text"
               className="form-control rounded-pill px-4 py-2 border-0"
-              placeholder="🔍 Search by brand, model or type..."
+              placeholder="Search by brand, model or type..."
               value={search}
               onChange={handleSearch}
               style={{
@@ -116,13 +116,22 @@ const Explore = () => {
                 >
                   <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
                     <img
-                      src={
-                        car.imageUrl
-                          ? `http://localhost:4041/imgs/${car.imageUrl}`
-                          : "https://via.placeholder.com/300"
-                      }
-                      className="card-img-top w-100 h-100"
+                      src={(() => {
+                        if (!car.imageUrl) return "https://via.placeholder.com/300"; // Fallback placeholder
+
+                        let cleanedPath = car.imageUrl.replace(/\/uploads\/imgs\/.*\/uploads\/imgs\//, "/uploads/imgs/");
+
+                        // Check if URL is relative and prepend localhost if necessary
+                        if (!cleanedPath.startsWith("http")) {
+                          cleanedPath = `http://localhost:4041${cleanedPath.startsWith("/") ? "" : "/"}${cleanedPath}`;
+                        }
+
+                        console.log("Cleaned Image URL:", cleanedPath);
+
+                        return cleanedPath;
+                      })()}
                       alt={car.variantName.charAt(0).toUpperCase() + car.variantName.slice(1)}
+                      className="card-img-top w-100 h-100"
                       style={{
                         objectFit: 'cover',
                         transition: 'transform 0.5s ease',
@@ -130,7 +139,6 @@ const Explore = () => {
                           transform: 'scale(1.05)'
                         }
                       }}
-
                     />
                     <div
                       className="position-absolute top-0 end-0 m-2 bg-white rounded-pill px-2 py-1 shadow-sm"

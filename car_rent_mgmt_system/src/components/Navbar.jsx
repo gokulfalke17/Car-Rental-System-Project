@@ -68,13 +68,13 @@ const Navbar = () => {
   }, []);
 
   const handleLogoutConfirm = () => {
-    console.log("data in local storage " + 
-     JSON.stringify(localStorage))
+    console.log("data in local storage " +
+      JSON.stringify(localStorage))
 
     localStorage.clear();
     setUser(null);
     setShowModal(false);
-     navigate('/login');
+    navigate('/login');
     // window.location.reload();
   };
 
@@ -190,6 +190,7 @@ const Navbar = () => {
                       <i className="bi bi-speedometer2 nav-icon"></i> Dashboard
                     </Link>
                   </li>
+                 
                   <li className="nav-item dropdown">
                     <Link
                       className={`${navLinkStyle} dropdown-toggle`}
@@ -202,6 +203,7 @@ const Navbar = () => {
                       <i className="bi bi-building-gear nav-icon"></i> Management
                     </Link>
                     <ul className="dropdown-menu dropdown-menu-dark" aria-labelledby="adminDropdown">
+                      
                       <li>
                         <Link className="dropdown-item d-flex align-items-center gap-2" to="/company" onClick={closeNavbar}>
                           <i className="bi bi-building-add nav-icon"></i> Add Company
@@ -219,6 +221,12 @@ const Navbar = () => {
                       </li>
                     </ul>
                   </li>
+                   <li className="nav-item">
+                        <Link className={navLinkStyle} to="/admin/car-history" onClick={closeNavbar}>
+                          <i className="bi bi-clock-history nav-icon"></i> Car_History
+                        </Link>
+                      </li>
+                      
                   <li className="nav-item position-relative">
                     <Link className={`${navLinkStyle} position-relative`} to="/admin/bookings" onClick={closeNavbar}>
                       <i className="bi bi-journal-bookmark nav-icon"></i> Bookings

@@ -5,6 +5,11 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useNavigate } from 'react-router-dom';
 
 const MyBookings = () => {
+
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => setIsHovered(true);
+    const handleMouseLeave = () => setIsHovered(false);
     const [bookings, setBookings] = useState([]);
     const [userId, setUserId] = useState(null);
     const [selectedBookingId, setSelectedBookingId] = useState(null);
@@ -253,27 +258,45 @@ const MyBookings = () => {
                                         )?.imageUrl;
 
                                         const fullImageUrl = variantImage
-                                            ? `http://localhost:4041/imgs/${variantImage}`
+                                            ? `http://localhost:4041${variantImage}`
                                             : "https://via.placeholder.com/300x200?text=Vehicle+Image";
+
+                                        console.log("Image url is :: ", fullImageUrl);
 
                                         return (
                                             <div key={booking.bookingId} className="col-12 col-md-6 col-lg-4">
                                                 <div className="card h-100 border-0 shadow-sm" style={{ borderRadius: '15px' }}>
                                                     <div className="position-relative">
                                                         <img
-                                                            src={fullImageUrl}
+                                                            src={(() => {
+                                                                if (!fullImageUrl) return "https://via.placeholder.com/300x200?text=No+Image";
+
+                                                                let cleanedPath = fullImageUrl.replace(/\/uploads\/imgs\/.*\/uploads\/imgs\//, "/uploads/imgs/");
+
+                                                               
+                                                                if (!cleanedPath.startsWith("http")) {
+                                                                    cleanedPath = `http://localhost:4041${cleanedPath.startsWith("/") ? "" : "/"}${cleanedPath}`;
+                                                                }
+
+                                                                return cleanedPath;
+                                                            })()}
+
                                                             className="card-img-top"
-                                                            alt="Vehicle"
                                                             style={{
                                                                 height: "200px",
                                                                 objectFit: "cover",
-                                                                borderTopLeftRadius: '15px',
-                                                                borderTopRightRadius: '15px'
+                                                                borderTopLeftRadius: "15px",
+                                                                borderTopRightRadius: "15px",
+                                                                transition: "transform 0.5s ease",
+                                                                transform: isHovered ? "scale(1.05)" : "scale(1)",
                                                             }}
+                                                            onMouseEnter={handleMouseEnter}
+                                                            onMouseLeave={handleMouseLeave}
                                                             onError={(e) => {
                                                                 e.target.src = "https://via.placeholder.com/300x200?text=Vehicle+Image";
                                                             }}
                                                         />
+
                                                         <div className="position-absolute top-0 end-0 m-2">
                                                             {getStatusBadge(booking.status)}
                                                         </div>
@@ -344,7 +367,6 @@ const MyBookings = () => {
                 </div>
             </div>
 
-            {/* Booking Details Modal */}
             {selectedBookingDetails && (
                 <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
                     <div className="modal-dialog modal-dialog-centered modal-lg">

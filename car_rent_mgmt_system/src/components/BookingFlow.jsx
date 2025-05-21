@@ -23,7 +23,6 @@ const BookingFlow = () => (
     <Card.Body>
       <h5 className="section-title">Booking Process</h5>
       
-      {/* Desktop Timeline */}
       <div className="timeline-desktop">
         {steps.map((step, index) => (
           <React.Fragment key={`desktop-${index}`}>
@@ -43,7 +42,6 @@ const BookingFlow = () => (
         ))}
       </div>
       
-      {/* Mobile Stepper */}
       <div className="stepper-mobile">
         {steps.map((step, index) => (
           <React.Fragment key={`mobile-${index}`}>

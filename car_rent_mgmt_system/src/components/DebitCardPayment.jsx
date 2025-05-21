@@ -44,9 +44,8 @@ const DebitCardPayment = () => {
       [name]: updatedValue
     }));
 
-    // Clear validation error when user types
     if (errors[name]) {
-      setErrors({...errors, [name]: ''});
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
@@ -60,12 +59,11 @@ const DebitCardPayment = () => {
     const newErrors = {};
     const cleanedCardNumber = paymentData.cardNumber.replace(/\s/g, '');
 
-    // Enhanced validation for debit cards
     const creditCardBins = [
-      /^4[0-9]{5}/,    // Visa
-      /^5[1-5][0-9]{4}/, // Mastercard
-      /^3[47][0-9]{4}/,  // Amex
-      /^6(?:011|5[0-9]{2})/ // Discover
+      /^4[0-9]{5}/,
+      /^5[1-5][0-9]{4}/,
+      /^3[47][0-9]{4}/,
+      /^6(?:011|5[0-9]{2})/
     ];
 
     const isLikelyCredit = creditCardBins.some((regex) => regex.test(cleanedCardNumber));
@@ -83,9 +81,9 @@ const DebitCardPayment = () => {
       const [month, year] = paymentData.expiryDate.split('/');
       const currentYear = new Date().getFullYear() % 100;
       const currentMonth = new Date().getMonth() + 1;
-      
-      if (parseInt(year) < currentYear || 
-          (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
+
+      if (parseInt(year) < currentYear ||
+        (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
         newErrors.expiryDate = 'Card has expired';
       }
     }
@@ -104,38 +102,47 @@ const DebitCardPayment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
     setIsProcessing(true);
 
     try {
-      const cleanedCardNumber = paymentData.cardNumber.replace(/\s/g, '');
+        const cleanedCardNumber = paymentData.cardNumber.replace(/\s/g, '');
+        const token = localStorage.getItem('token');
 
-      const response = await axios.post('http://localhost:4041/api/payment/debit-card', null, {
-        params: {
-          bookingId: bookingDetails?.bookingId,
-          cardNumber: cleanedCardNumber,
-          expiryDate: paymentData.expiryDate,
-          cvv: paymentData.cvv,
-          cardHolderName: paymentData.cardHolderName
+        const response = await axios.post(
+            'http://localhost:4041/api/payment/debit-card',
+            null,
+            {
+                params: {
+                    bookingId: bookingDetails?.bookingId,
+                    cardNumber: cleanedCardNumber,
+                    expiryDate: paymentData.expiryDate,
+                    cvv: paymentData.cvv,
+                    cardHolderName: paymentData.cardHolderName,
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        if (response.data) {
+            setPaymentSuccess(true);
+            setTimeout(() => {
+                navigate('/my-bookings');
+            }, 3000);
         }
-      });
-
-      if (response.data) {
-        setPaymentSuccess(true);
-        setTimeout(() => {
-          navigate('/my-bookings');
-        }, 3000);
-      }
     } catch (error) {
-      console.error('Payment error:', error);
-      setErrors({
-        submit: error.response?.data?.message || 'Payment failed. Please check your details and try again.'
-      });
+        console.error('Payment error:', error);
+        setErrors({
+            submit: error.response?.data?.message || 'Payment failed. Please check your details and try again.',
+        });
     } finally {
-      setIsProcessing(false);
+        setIsProcessing(false);
     }
-  };
+};
 
   if (!bookingDetails) {
     return (
@@ -165,8 +172,8 @@ const DebitCardPayment = () => {
                   Your payment of <strong className="text-dark">₹{bookingDetails?.totalPrice?.toFixed(2) || 0}</strong> has been processed successfully.
                 </p>
                 <p className="text-muted">Transaction ID: <strong className="text-dark">{bookingDetails?.bookingId || 'N/A'}</strong></p>
-                <Button 
-                  variant="success" 
+                <Button
+                  variant="success"
                   onClick={() => navigate('/my-bookings')}
                   className="mt-4 px-4 py-2 rounded-3 fw-bold"
                 >
@@ -194,7 +201,7 @@ const DebitCardPayment = () => {
             </Card.Header>
             <Card.Body className="p-4">
               {errors.submit && (
-                <Alert variant="danger" onClose={() => setErrors({...errors, submit: ''})} dismissible>
+                <Alert variant="danger" onClose={() => setErrors({ ...errors, submit: '' })} dismissible>
                   <i className="bi bi-exclamation-triangle-fill me-2"></i>
                   {errors.submit}
                 </Alert>
@@ -223,6 +230,7 @@ const DebitCardPayment = () => {
                     maxLength={19}
                     isInvalid={!!errors.cardNumber}
                     className="py-2"
+                    autoComplete="cc-number"
                   />
                   <Form.Control.Feedback type="invalid">
                     <i className="bi bi-exclamation-circle me-2"></i>
@@ -246,6 +254,7 @@ const DebitCardPayment = () => {
                         maxLength={5}
                         isInvalid={!!errors.expiryDate}
                         className="py-2"
+                        autoComplete="cc-exp"
                       />
                       <Form.Control.Feedback type="invalid">
                         <i className="bi bi-exclamation-circle me-2"></i>
@@ -268,6 +277,7 @@ const DebitCardPayment = () => {
                         maxLength={3}
                         isInvalid={!!errors.cvv}
                         className="py-2"
+                        autoComplete="cc-csc"
                       />
                       <Form.Control.Feedback type="invalid">
                         <i className="bi bi-exclamation-circle me-2"></i>
@@ -290,6 +300,8 @@ const DebitCardPayment = () => {
                     placeholder="Full Name"
                     isInvalid={!!errors.cardHolderName}
                     className="py-2"
+                    autoComplete="cc-name"
+                    autoCapitalize="words"
                   />
                   <Form.Control.Feedback type="invalid">
                     <i className="bi bi-exclamation-circle me-2"></i>

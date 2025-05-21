@@ -16,87 +16,110 @@ import com.mgmt.repository.IVehicleRepository;
 @Service
 public class VariantServiceImpl implements IVariantService {
 
-	@Autowired
-	private IVariantRepository variantRepository;
+    @Autowired
+    private IVariantRepository variantRepository;
 
-	@Autowired
-	private IVehicleRepository vehicleRepository;
+    @Autowired
+    private IVehicleRepository vehicleRepository;
 
-	
-	@Override
-	public Variant addVariant(Variant variant) throws IOException {
-		System.err.println(variant);
-		return variantRepository.save(variant);
-	}
 
-	@Override
-	public List<Variant> getAllVariants() {
-		return variantRepository.findAll();
-	}
-	
-	
-	@Override
-	public Variant getVariantById(Integer id) {
-	    Variant variant = variantRepository.findById(id).orElse(null);
-	    if (variant != null) {
-	        List<Vehicle> vehicles = vehicleRepository.findByVariant(variant);
-	        variant.setVehicles(vehicles);
-	    }
-	    return variant;
-	}
-	
-	@Override
-	public Page<Variant> getAllVariants(Pageable pageable) {
-	    return variantRepository.findAll(pageable);
-	}
-	
+    @Override
+    public Variant addVariant(Variant variant) throws IOException {
+        System.err.println("Saving variant: " + variant);
+        
+        return variantRepository.save(variant);
+    }
 
-	@Override
-	public Variant updateVariant(Integer id, Variant updated) {
-	    Variant existing = variantRepository.findById(id).orElse(null);
-	    if (existing != null) {
-	        updated.setVariantId(id);
-	        return variantRepository.save(updated);
-	    }
-	    return null;
-	}
 
-	
-	@Override
-	public void deleteVariant(Integer id) {
-	    variantRepository.deleteById(id);
-	}
-	
-	
+    @Override
+    public List<Variant> getAllVariants() {
+        List<Variant> variants = variantRepository.findAll();
+        variants.forEach(variant -> {
+            if (variant.getImageUrl() != null && !variant.getImageUrl().isEmpty()) {
+                variant.setImageUrl("/uploads/imgs/" + variant.getImageUrl());
+            } else {
+                variant.setImageUrl(null);
+            }
+        });
+        return variants;
+    }
 
-	
-	
-	
-	@Override
-	public List<Vehicle> getVehiclesByVariantId(Integer variantId) {
-	    Variant variant = variantRepository.findById(variantId)
-	            .orElseThrow(() -> new RuntimeException("Variant Not Found :: " + variantId));
-	    return vehicleRepository.findByVariant(variant);
-	}
 
-	@Override
-	//public Vehicle addVehicleToVariant(Integer variantId, String registrationNumber) {
-		public Vehicle addVehicleToVariant(Integer variantId, String registrationNumber, String status) {
+    @Override
+    public Variant getVariantById(Integer id) {
+        Variant variant = variantRepository.findById(id).orElse(null);
+        if (variant != null) {
+            if (variant.getImageUrl() != null && !variant.getImageUrl().isEmpty()) {
+                variant.setImageUrl("/uploads/imgs/" + variant.getImageUrl());
+            } else {
+                variant.setImageUrl(null);
+            }
+            List<Vehicle> vehicles = vehicleRepository.findByVariant(variant);
+            variant.setVehicles(vehicles);
+        }
+        return variant;
+    }
 
-	    Variant variant = variantRepository.findById(variantId)
-	            .orElseThrow(() -> new RuntimeException("Variant Not Found :: " + variantId));
+    @Override
+    public Page<Variant> getAllVariants(Pageable pageable) {
+        Page<Variant> variantsPage = variantRepository.findAll(pageable);
+        variantsPage.getContent().forEach(variant -> {
+            if (variant.getImageUrl() != null && !variant.getImageUrl().isEmpty()) {
+                variant.setImageUrl("/uploads/imgs/" + variant.getImageUrl());
+            } else {
+                variant.setImageUrl(null);
+            }
+        });
+        return variantsPage;
+    }
 
-	    Vehicle vehicle = new Vehicle();
-	    vehicle.setVehicleRegistrationNumber(registrationNumber);
-	    vehicle.setStatus(status);
-	    vehicle.setVariant(variant); 
+    
+    
+    @Override
+    public Variant updateVariant(Integer id, Variant updated) {
+        Variant existing = variantRepository.findById(id).orElse(null);
+        if (existing != null) {
+            updated.setVariantId(id);
+            if (updated.getImageUrl() != null && !updated.getImageUrl().isEmpty()) {
+                updated.setImageUrl(updated.getImageUrl()); 
+            } else {
+                updated.setImageUrl(null);
+            }
+            return variantRepository.save(updated);
+        }
+        return null;
+    }
 
-	    return vehicleRepository.save(vehicle);
-	}
 
-	
-	
-	@Override
+    @Override
+    public void deleteVariant(Integer id) {
+        variantRepository.deleteById(id);
+    }
+
+
+    @Override
+    public List<Vehicle> getVehiclesByVariantId(Integer variantId) {
+        Variant variant = variantRepository.findById(variantId)
+                .orElseThrow(() -> new RuntimeException("Variant Not Found :: " + variantId));
+        return vehicleRepository.findByVariant(variant);
+    }
+
+    @Override
+    public Vehicle addVehicleToVariant(Integer variantId, String registrationNumber, String status) {
+
+        Variant variant = variantRepository.findById(variantId)
+                .orElseThrow(() -> new RuntimeException("Variant Not Found :: " + variantId));
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVehicleRegistrationNumber(registrationNumber);
+        vehicle.setStatus(status);
+        vehicle.setVariant(variant);
+
+        return vehicleRepository.save(vehicle);
+    }
+
+
+    @Override
     public Vehicle getVehicleById(Integer vehicleId) {
         return vehicleRepository.findById(vehicleId).orElse(null);
     }
@@ -106,8 +129,16 @@ public class VariantServiceImpl implements IVariantService {
         vehicleRepository.deleteById(vehicleId);
     }
 
-	@Override
-	public List<Variant> getAllVehicles() {
-		return variantRepository.findAll();
-	}
+    @Override
+    public List<Variant> getAllVehicles() {
+        List<Variant> variants = variantRepository.findAll();
+        variants.forEach(variant -> {
+            if (variant.getImageUrl() != null && !variant.getImageUrl().isEmpty()) {
+                variant.setImageUrl("/uploads/imgs/" + variant.getImageUrl());
+            } else {
+                variant.setImageUrl(null);
+            }
+        });
+        return variants;
+    }
 }

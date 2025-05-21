@@ -8,6 +8,10 @@ const Booking = () => {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
 
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
   const [vehicle, setVehicle] = useState(null);
   const [userId, setUserId] = useState(null);
   const [fromDate, setFromDate] = useState("");
@@ -46,7 +50,7 @@ const Booking = () => {
             axios.get(`http://localhost:4041/api/variant/vehicle/${vehicleId}`),
             axios.get(`http://localhost:4041/api/license/user/${userIdFromStorage}`)
           ]);
-          
+
           setVehicle(vehicleRes.data);
           setHasLicense(licenseRes.data !== null);
         } catch (err) {
@@ -137,7 +141,7 @@ const Booking = () => {
         "http://localhost:4041/api/bookings/book",
         bookingData
       );
-      
+
       if (response.data.bookingId) {
         setMessage({
           text: "Vehicle booked successfully! Redirecting to your bookings...",
@@ -179,7 +183,7 @@ const Booking = () => {
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           Vehicle not found or failed to load details.
         </div>
-        <button 
+        <button
           className="btn btn-primary mt-3"
           onClick={() => navigate(-1)}
         >
@@ -194,7 +198,7 @@ const Booking = () => {
       <div className="row justify-content-center">
         <div className="col-lg-8">
           <div className="text-center mb-5">
-            <h2 className="display-5 fw-bold mb-3" style={{ 
+            <h2 className="display-5 fw-bold mb-3" style={{
               color: "#2c3e50",
               background: "linear-gradient(90deg, #3498db, #2ecc71)",
               WebkitBackgroundClip: "text",
@@ -210,22 +214,35 @@ const Booking = () => {
               <div className="card border-0 shadow-lg rounded-4 h-100 overflow-hidden">
                 <div className="position-relative" style={{ height: "250px" }}>
                   <img
-                    src={
-                      image
-                        ? `http://localhost:4041/imgs/${image}`
-                        : "https://via.placeholder.com/300"
-                    }
+                    src={(() => {
+                      if (!image) return "https://via.placeholder.com/300";
+
+                      let cleanedPath = image.replace(/\/uploads\/imgs\/.*\/uploads\/imgs\//, "/uploads/imgs/");
+
+
+                      if (!cleanedPath.startsWith("http")) {
+                        cleanedPath = `http://localhost:4041${cleanedPath.startsWith("/") ? "" : "/"}${cleanedPath}`;
+                      }
+
+                      return cleanedPath;
+                    })()}
                     alt={vehicle.variantName}
                     className="w-100 h-100 object-fit-cover"
+                    style={{
+                      transition: 'transform 0.5s ease',
+                      transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                    }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   />
-                  <div className="position-absolute bottom-0 start-0 w-100 p-3" style={{ 
+                  <div className="position-absolute bottom-0 start-0 w-100 p-3" style={{
                     background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)"
                   }}>
                     <h3 className="text-white mb-0">{vehicle.variantName}</h3>
                     <p className="text-white-50 mb-0">{vehicle.company?.companyName}</p>
                   </div>
                 </div>
-                 
+
               </div>
             </div>
 
@@ -325,8 +342,8 @@ const Booking = () => {
                     </div>
 
                     <div className="d-grid mt-4">
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         className="btn btn-primary btn-lg rounded-pill py-3 fw-bold"
                         disabled={isLoading}
                       >
@@ -350,7 +367,7 @@ const Booking = () => {
                       <i className="bi bi-exclamation-triangle-fill me-2"></i>
                       <div>
                         <strong>License Required:</strong> You need to add your driving license before booking.
-                        <button 
+                        <button
                           className="btn btn-sm btn-outline-warning ms-2"
                           onClick={() => navigate("/add-license")}
                         >

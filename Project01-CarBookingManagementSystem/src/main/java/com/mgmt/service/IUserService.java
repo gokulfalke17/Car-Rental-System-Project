@@ -25,4 +25,6 @@ public interface IUserService {
 	public String resetPassword(String email, String newPassword);
 
 	public boolean deleteCustomerById(Integer userId);
+	
+	public User updateUser(Integer userId, User user);
 }

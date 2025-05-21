@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,25 +29,25 @@ import com.mgmt.service.IUserService;
 @CrossOrigin(origins = "http://localhost:5173")
 public class UserOperationsConteroller {
 
-    @Autowired
-    private IUserService userService;
+	@Autowired
+	private IUserService userService;
 
-    // http://localhost:4041/api/users/register
-    @PostMapping("/register")
-    public User registerUser(@RequestBody User user) {
-        return userService.registerUser(user);
-    }
-    
-    @PostMapping("/admin")
-    public Admin registerAdmin(@RequestBody Admin admin) {
-    	return userService.registerAdmin(admin);
-    }
+	// http://localhost:4041/api/users/register
+	@PostMapping("/register")
+	public User registerUser(@RequestBody User user) {
+		return userService.registerUser(user);
+	}
 
-    // http://localhost:4041/api/users
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
+	@PostMapping("/admin")
+	public Admin registerAdmin(@RequestBody Admin admin) {
+		return userService.registerAdmin(admin);
+	}
+
+	// http://localhost:4041/api/users
+	@GetMapping
+	public List<User> getAllUsers() {
+		return userService.getAllUsers();
+	}
 
 	/* // http://localhost:4041/api/users/login
 	@PostMapping("/login")
@@ -58,7 +59,7 @@ public class UserOperationsConteroller {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid Email and Password");
 	    }
 	}*/
-    
+
 	/* @PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 	    String role = loginRequest.getRole();
@@ -79,76 +80,83 @@ public class UserOperationsConteroller {
 	
 	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Credentials or Role");
 	}*/
-    
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        String role = loginRequest.getRole();
 
-        if ("admin".equalsIgnoreCase(role)) {
-            Admin admin = userService.loginAsAdmin(loginRequest.getEmail(), loginRequest.getPassword());
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+		String role = loginRequest.getRole();
 
-            if (admin != null) {
-                Map<String, Object> response = new HashMap<String, Object>();
-                response.put("user", admin);
-                response.put("role", "admin");
-                return ResponseEntity.ok(response);
-            }
-        } else if ("customer".equalsIgnoreCase(role)) {
-            User user = userService.loginAsCustomer(loginRequest.getEmail(), loginRequest.getPassword());
+		if ("admin".equalsIgnoreCase(role)) {
+			Admin admin = userService.loginAsAdmin(loginRequest.getEmail(), loginRequest.getPassword());
 
-            if (user != null) {
-                Map<String, Object> response = new HashMap<String, Object>();
-                response.put("user", user);
-                response.put("role", "customer");
-                return ResponseEntity.ok(response);
-            }
-        }
+			if (admin != null) {
+				Map<String, Object> response = new HashMap<String, Object>();
+				response.put("user", admin);
+				response.put("role", "admin");
+				return ResponseEntity.ok(response);
+			}
+		} else if ("customer".equalsIgnoreCase(role)) {
+			User user = userService.loginAsCustomer(loginRequest.getEmail(), loginRequest.getPassword());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Credentials or Role");
-    }
-    
-    
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile(@RequestParam String email) {
-        User user = userService.getUserByEmail(email);
-//        System.out.println(user.getEmail());
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-    }
-    
-    @GetMapping("/forgot-password")
-    public ResponseEntity<String> forgotUserPassword(@RequestParam String email) {
-        String response = userService.forgotUserPassword(email);
-        if (response.startsWith("Password Reset Link")) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-    }
-    
-    
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
-        try {
-            userService.resetPassword(request.getEmail(), request.getNewPassword());
-            return ResponseEntity.ok("Password Updated Successfully...");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error Updating Password");
-        }
-    }
-    
-    
-	  @DeleteMapping("/{userId}")
-	public ResponseEntity<String> deleteCustomer(@PathVariable Integer userId) {
-	    boolean isDeleted = userService.deleteCustomerById(userId);
-	    if (isDeleted) {
-	        return ResponseEntity.ok("Customer Deleted Successfully...");
-	    } else {
-	        return ResponseEntity.status(404).body("Customer Not Found.!");
-	    }
+			if (user != null) {
+				Map<String, Object> response = new HashMap<String, Object>();
+				response.put("user", user);
+				response.put("role", "customer");
+				return ResponseEntity.ok(response);
+			}
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Credentials or Role");
 	}
-	
+
+	@GetMapping("/profile")
+	public ResponseEntity<?> getUserProfile(@RequestParam String email) {
+		User user = userService.getUserByEmail(email);
+//        System.out.println(user.getEmail());
+		if (user != null) {
+			return ResponseEntity.ok(user);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+		}
+	}
+
+	@GetMapping("/forgot-password")
+	public ResponseEntity<String> forgotUserPassword(@RequestParam String email) {
+		String response = userService.forgotUserPassword(email);
+		if (response.startsWith("Password Reset Link")) {
+			return ResponseEntity.ok(response);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+	}
+
+	@PostMapping("/reset-password")
+	public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+		try {
+			userService.resetPassword(request.getEmail(), request.getNewPassword());
+			return ResponseEntity.ok("Password Updated Successfully...");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error Updating Password");
+		}
+	}
+
+	@DeleteMapping("/{userId}")
+	public ResponseEntity<String> deleteCustomer(@PathVariable Integer userId) {
+		boolean isDeleted = userService.deleteCustomerById(userId);
+		if (isDeleted) {
+			return ResponseEntity.ok("Customer Deleted Successfully...");
+		} else {
+			return ResponseEntity.status(404).body("Customer Not Found.!");
+		}
+	}
+
+	@PutMapping("/{userId}")
+	public ResponseEntity<?> updateUser(@PathVariable Integer userId, @RequestBody User updatedUser) {
+		User user = userService.updateUser(userId, updatedUser);
+		if (user != null) {
+			return ResponseEntity.ok(user);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+		}
+	}
+
 }
