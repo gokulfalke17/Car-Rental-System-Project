@@ -14,6 +14,8 @@ const Explore = () => {
     axios
       .get("http://localhost:4041/api/variant/all-variants")
       .then((res) => {
+        const dataString = JSON.stringify(res.data, null, 2); 
+      console.log("All Vehicle Data :: \n" + dataString);
         setVehicles(res.data);
       })
       .catch((err) => console.error("Error fetching vehicles:", err));
@@ -53,6 +55,8 @@ const Explore = () => {
       [index]: !prev[index],
     }));
   };
+
+  
 
   return (
     <div className="container py-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
@@ -117,11 +121,11 @@ const Explore = () => {
                   <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
                     <img
                       src={(() => {
-                        if (!car.imageUrl) return "https://via.placeholder.com/300"; // Fallback placeholder
+                        if (!car.imageUrl) return "https://via.placeholder.com/300"; 
+                        
 
                         let cleanedPath = car.imageUrl.replace(/\/uploads\/imgs\/.*\/uploads\/imgs\//, "/uploads/imgs/");
 
-                        // Check if URL is relative and prepend localhost if necessary
                         if (!cleanedPath.startsWith("http")) {
                           cleanedPath = `http://localhost:4041${cleanedPath.startsWith("/") ? "" : "/"}${cleanedPath}`;
                         }

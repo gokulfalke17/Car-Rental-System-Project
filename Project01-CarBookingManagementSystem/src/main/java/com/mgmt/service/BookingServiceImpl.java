@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.mgmt.entity.Booking;
 import com.mgmt.entity.Booking.BookingStatus;
-import com.mgmt.entity.License;
 import com.mgmt.entity.User;
 import com.mgmt.entity.Vehicle;
 import com.mgmt.repository.IBookingRepository;
@@ -181,23 +180,26 @@ public class BookingServiceImpl implements IBookingService {
 	}*/
 
 	
-	@Scheduled(cron = "0 0 0 * * ?") 
+	@Scheduled(cron = "0 0 * * * *")
 	public void updateExpiredBookings() {
-	    LocalDate today = LocalDate.now();
+	    LocalDate today = LocalDate.now(); 
 
 	    List<Booking> bookings = bookingRepository.findAll();
-	    
+
 	    for (Booking booking : bookings) {
-	        if ("Booked".equalsIgnoreCase(booking.getVehicle().getStatus()) && booking.getToDate().isBefore(today)) {
-	            Vehicle vehicle = booking.getVehicle();
-	            
-	            if (vehicle != null && "Booked".equalsIgnoreCase(vehicle.getStatus())) {
-	                vehicle.setStatus("Available");
-	                vehicleRepository.save(vehicle);  
-	            }
+	        Vehicle vehicle = booking.getVehicle();
+
+	        if (vehicle != null &&
+	            "Booked".equalsIgnoreCase(vehicle.getStatus()) &&
+	            booking.getToDate().isBefore(today)) {
+
+	            vehicle.setStatus("Available");
+	            vehicleRepository.save(vehicle);
+	            System.out.println("Vehicle ID " + vehicle.getVehicleId() + " is now marked as Available.");
 	        }
 	    }
 	}
+
 	
 	
 	

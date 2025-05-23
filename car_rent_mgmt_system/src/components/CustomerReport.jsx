@@ -27,7 +27,7 @@ const CustomerReport = () => {
     textDark: "#2c3e50"
   };
 
-  const activeBookings = bookings.filter(booking => booking.status === 'COMPLETED');
+  const activeBookings = bookings.filter(booking => booking.status === 'COMPLETED' || booking.status === 'CONFIRMED' );
   const totalAmount = activeBookings.reduce((sum, booking) => sum + booking.totalPrice, 0);
   
 
@@ -164,7 +164,6 @@ const CustomerReport = () => {
     return feedbackUserId === currentUserId;
   });
   
-  // Debugging logs
   console.log('User ID:', userId);
   console.log('Feedbacks:', feedbacks);
   console.log('Filtered Feedbacks:', userFeedbacks);
